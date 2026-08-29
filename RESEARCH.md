@@ -35,6 +35,31 @@ $GITHUB_TOKEN`, no hard-coding.
 Faithfulness and coverage are multiplicative gates: you cannot win by being only faithful
 (say nothing) or only thorough (invent detail). You need both, stated briefly.
 
+## Know the ground truth first
+
+Before you optimize anything, **read the eval-set PRs yourself so you know what a correct
+summary should say** — start with `VictorFouquet/supportops` PR #11, then #8 and #10:
+
+```bash
+gh pr view VictorFouquet/supportops 11
+gh pr diff VictorFouquet/supportops 11
+```
+
+(`gh` handles auth — never print or hard-code the token.)
+
+Why this matters: the metrics are mechanical and reference-free. They catch hallucination
+(faithfulness) and omission (coverage), but they **cannot tell whether a grounded,
+file-covering summary is actually accurate or useful**. You are the semantic check. Read
+the summaries a run produced (`per_pr[].summary` in `research/log.jsonl`) against the real
+PR and confirm a rising composite means genuinely better summaries — not a gamed metric.
+If composite goes up but the summary got worse, the metric is being gamed; note it and
+change tack.
+
+**Do not overfit.** You are tuning a *general* prompt that must work on any PR. Never
+encode facts specific to the eval-set PRs into `prompts/system_prompt.txt` — no "this repo
+uses the App Router", no hard-coded paths or endpoints. If an edit only helps because it
+bakes in #11's specifics, it is cheating the metric, not improving the summarizer.
+
 ## The loop
 
 1. `python evaluate.py --status` — see the current best and recent trials.

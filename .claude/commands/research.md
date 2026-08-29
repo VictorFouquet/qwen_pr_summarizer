@@ -2,6 +2,10 @@ Act as the prompt researcher for this repo. Read `RESEARCH.md` and follow it exa
 
 Run one full research iteration (unless I gave a number of iterations in the arguments below):
 
+0. If you have not already this session, read the eval-set PRs for ground truth — start
+   with `gh pr view VictorFouquet/supportops 11` and `gh pr diff VictorFouquet/supportops 11`
+   (then #8, #10) — so you can judge whether a higher composite is a genuinely better
+   summary and not a gamed metric. Never print or hard-code the token.
 1. `python evaluate.py --status` and read the most recent trial's per-PR `unsupported`
    claims in `research/log.jsonl`.
 2. Form ONE hypothesis about why the current `prompts/system_prompt.txt` loses composite.
