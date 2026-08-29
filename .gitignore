@@ -1,0 +1,13 @@
+# Secrets — never commit a token or env file
+.env
+.env.*
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Research outputs
+research/log.jsonl        # trial history; force-add if you want to version a run
+research/progress.html    # generated dashboard

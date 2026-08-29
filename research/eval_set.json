@@ -1,0 +1,8 @@
+{
+  "note": "FROZEN eval set. It is part of the config fingerprint: changing which PRs are here makes trials before and after non-comparable. Pick PRs of varied size/shape and leave them fixed for a whole optimization run.",
+  "prs": [
+    { "repo": "VictorFouquet/supportops", "pr_number": 8 },
+    { "repo": "VictorFouquet/supportops", "pr_number": 10 },
+    { "repo": "VictorFouquet/supportops", "pr_number": 11 }
+  ]
+}
