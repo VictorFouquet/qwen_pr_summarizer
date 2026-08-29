@@ -51,6 +51,13 @@ except ModuleNotFoundError:
 MODEL = os.environ.get("PR_SUMMARIZER_MODEL", "qwen3:8b")
 TEMPERATURE = 0.0
 MAX_STEPS = 8
+# Context window. Ollama's default num_ctx is only 2048 tokens; the eval-PR groundings
+# are 24k-38k tokens, so at the default the tool output overflows the window and the
+# SYSTEM PROMPT (at the head) is truncated away before generation — making prompt
+# optimization inert (verified: identical output across different prompts). Sized to the
+# model's maximum so the prompt + a full PR's grounding coexist. Requires adequate memory
+# for the KV cache (~5-6GB at this size, on top of the ~6GB model).
+NUM_CTX = int(os.environ.get("PR_SUMMARIZER_NUM_CTX", "40960"))
 
 
 def frozen_config() -> dict:
@@ -58,6 +65,7 @@ def frozen_config() -> dict:
         "model": MODEL,
         "temperature": TEMPERATURE,
         "max_steps": MAX_STEPS,
+        "num_ctx": NUM_CTX,
         "tools": ["get_pr_files", "read_file"],
         "metric": {
             "formula": "faithfulness * coverage * (0.7 + 0.3*brevity)",
@@ -167,7 +175,7 @@ def summarize_pr(
     captured: list[str] = []
     tools = _build_tools(gh, captured)
     tool_map = {t.name: t for t in tools}
-    llm = ChatOllama(model=model, temperature=temperature).bind_tools(tools)
+    llm = ChatOllama(model=model, temperature=temperature, num_ctx=NUM_CTX).bind_tools(tools)
 
     system = prompt if prompt is not None else load_prompt()
     messages: list = [
