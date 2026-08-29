@@ -74,6 +74,18 @@ bakes in #11's specifics, it is cheating the metric, not improving the summarize
 5. Compare the new composite to the best. If worse, revert the change (git) or try a
    different edit. If better, keep it — the file is now the champion.
 6. `python visualize.py` — regenerate `research/progress.html` for the human to watch.
+7. **Commit the trail.** After each trial, commit `prompts/system_prompt.txt`,
+   `research/log.jsonl`, and `research/progress.html` together, with a message stating the
+   hypothesis and the result, e.g.:
+
+   ```bash
+   git add prompts/system_prompt.txt research/log.jsonl research/progress.html
+   git commit -m "trial N: <hypothesis> -> composite X.XX (was Y.YY)"
+   ```
+
+   The log is the versioned record of the experiment and git history is the record of your
+   decisions — do not squash or discard trials, even the ones that made things worse; a
+   failed idea is data.
 
 Repeat. One variable, one hypothesis, one trial at a time — that is what makes the graph
 readable.

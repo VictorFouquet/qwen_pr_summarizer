@@ -10,6 +10,6 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Research outputs (generated). Force-add log.jsonl if you want to version a run.
-research/log.jsonl
-research/progress.html
+# research/log.jsonl and research/progress.html are intentionally TRACKED: the log is
+# the experiment record (every trial, note, and hypothesis) and the dashboard is its
+# rendered snapshot. They are the decision trail — versioned on purpose.

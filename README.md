@@ -22,7 +22,7 @@ prompt against that score and watch it improve.
 | `pr_summarizer/evaluate.py` + `evaluate.py` | Score a prompt over the eval set, log a trial | ✅ |
 | `pr_summarizer/dashboard.py` + `visualize.py` | Offline HTML progress graph | ✅ |
 | `research/eval_set.json` | The PRs scored against | ✅ frozen |
-| `research/log.jsonl` | Append-only trial history | — |
+| `research/log.jsonl` | Append-only trial history — every trial, note & hypothesis (tracked; the decision trail) | — |
 
 The **researcher** is a Claude Code session that follows [`RESEARCH.md`](./RESEARCH.md)
 and edits only `prompts/system_prompt.txt`.
