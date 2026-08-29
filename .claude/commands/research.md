@@ -13,8 +13,12 @@ Run one full research iteration (unless I gave a number of iterations in the arg
 4. `python evaluate.py --note "<your hypothesis>"`.
 5. Report whether composite improved vs. the best, and regenerate the graph with
    `python visualize.py`.
+6. Commit this iteration (per RESEARCH.md): ALWAYS commit `research/log.jsonl` +
+   `research/progress.html` with the hypothesis and result; ALSO commit
+   `prompts/system_prompt.txt` only if it improved (revert it first if it regressed).
+   Commit every trial — successes and failures both. A failed idea is data.
 
 Hard rules: edit only `prompts/system_prompt.txt`; never read/print/hard-code
-`GITHUB_TOKEN`; change one thing per trial.
+`GITHUB_TOKEN`; change one thing per trial; commit every iteration.
 
 Iterations / focus (optional): $ARGUMENTS

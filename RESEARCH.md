@@ -71,21 +71,34 @@ bakes in #11's specifics, it is cheating the metric, not improving the summarize
    to `prompts/system_prompt.txt`.
 4. `python evaluate.py --note "<your hypothesis>"` — this scores the new prompt over the
    eval set and appends a trial (your note is the record of what you tried and why).
-5. Compare the new composite to the best. If worse, revert the change (git) or try a
-   different edit. If better, keep it — the file is now the champion.
-6. `python visualize.py` — regenerate `research/progress.html` for the human to watch.
-7. **Commit the trail.** After each trial, commit `prompts/system_prompt.txt`,
-   `research/log.jsonl`, and `research/progress.html` together, with a message stating the
-   hypothesis and the result, e.g.:
+5. Compare the new composite to the best so far.
+   - **Improved** → keep the edited prompt; it is the new champion.
+   - **Regressed or unchanged** → revert the prompt to the previous champion
+     (`git checkout -- prompts/system_prompt.txt`). You still keep the trial: the failed
+     idea stays in the log.
+6. `python visualize.py` — regenerate `research/progress.html`.
+7. **Commit every iteration — successes and failures alike.** This is the whole point:
+   git history plus the log are the record of every idea, why you tried it, and what
+   happened. Two rules:
+   - **Always** commit the log and dashboard (the trial, your hypothesis, the result) —
+     even when the idea failed.
+   - Commit the changed `prompts/system_prompt.txt` **only when the trial improved** (a
+     champion advance). On a regression the prompt is already reverted, so the commit
+     records the failed idea without moving the champion.
 
+   Improvement (champion advances):
    ```bash
    git add prompts/system_prompt.txt research/log.jsonl research/progress.html
-   git commit -m "trial N: <hypothesis> -> composite X.XX (was Y.YY)"
+   git commit -m "trial N ✓ <hypothesis> -> composite X.XX (was Y.YY)"
+   ```
+   Regression (prompt reverted, finding kept):
+   ```bash
+   git add research/log.jsonl research/progress.html
+   git commit -m "trial N ✗ <hypothesis> -> composite X.XX (best Y.YY), reverted"
    ```
 
-   The log is the versioned record of the experiment and git history is the record of your
-   decisions — do not squash or discard trials, even the ones that made things worse; a
-   failed idea is data.
+   Never squash or drop trials. A failed idea is data — it stops you and the next
+   researcher from re-trying a dead end.
 
 Repeat. One variable, one hypothesis, one trial at a time — that is what makes the graph
 readable.
