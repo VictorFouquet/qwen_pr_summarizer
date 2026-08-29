@@ -33,6 +33,16 @@ from pr_summarizer.verifier import Verification, verify
 ROOT = Path(__file__).resolve().parent
 PROMPT_FILE = ROOT / "prompts" / "system_prompt.txt"
 
+# Load GITHUB_TOKEN (and optional overrides) from a git-ignored .env so it need not be
+# exported every session. Real environment variables still take precedence, and a
+# missing python-dotenv or .env is fine — it just falls back to the process environment.
+try:
+    from dotenv import load_dotenv
+
+    load_dotenv(ROOT / ".env")
+except ModuleNotFoundError:
+    pass
+
 # ---- FROZEN configuration -------------------------------------------------
 # The only thing an optimization run may change is the system prompt. Everything
 # below is held constant so a score delta is attributable to the prompt alone.

@@ -36,9 +36,12 @@ pip install -r requirements.txt
 # Local model
 ollama pull qwen3:8b            # or set PR_SUMMARIZER_MODEL to another local model
 
-# GitHub auth — supplied via the environment, never hard-coded or committed
-export GITHUB_TOKEN=...         # a token with repo read access
+# GitHub auth — via a git-ignored .env, so you set it once (never hard-coded or committed)
+cp .env.example .env           # then edit .env and set GITHUB_TOKEN=...
 ```
+
+`main.py` loads `.env` automatically (an exported `GITHUB_TOKEN` still takes precedence).
+`.env` is git-ignored; only `.env.example` is tracked.
 
 ## Use
 
@@ -75,8 +78,9 @@ inventing detail (faithfulness down). Only a faithful, complete, concise summary
 
 ## Token safety
 
-The GitHub token is read from `$GITHUB_TOKEN` at runtime by `main.py` only. It is never
-stored in source, printed, logged, or committed (`.env` is git-ignored). Do not hard-code it.
+The GitHub token is read from `$GITHUB_TOKEN` (or a git-ignored `.env`) at runtime by
+`main.py` only. It is never stored in source, printed, logged, or committed. Do not
+hard-code it. Only `.env.example` (a placeholder) is tracked.
 
 ## Tests
 

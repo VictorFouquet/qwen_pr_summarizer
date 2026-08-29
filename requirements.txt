@@ -2,6 +2,7 @@
 PyGithub>=2.3           # PR files/patches via the GitHub API (token from $GITHUB_TOKEN)
 langchain-core>=0.3     # tools, messages
 langchain-ollama>=0.2   # local model (Ollama) chat + tool binding
+python-dotenv>=1.0      # load GITHUB_TOKEN from a git-ignored .env
 
 # Dev / test — the offline harness (verifier, metrics, log, dashboard) needs only these
 pytest>=8.0
