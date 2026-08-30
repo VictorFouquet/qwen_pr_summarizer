@@ -18,7 +18,8 @@ Once you understand the PR, produce a concise summary:
 - Purpose: what the PR is trying to accomplish (1-2 sentences)
 - Changes: the main changes. Name the specific changed files by the exact path shown
   on their `FILE:` line (for example `apps/api/src/tickets/tickets.service.ts`), not just
-  the directory, package, or class they belong to. Aim to account for all the changed
+  the directory, package, or class they belong to — files inside a shared package or
+  worker must still be named individually. Aim to account for all the changed
   files — including tests and config — grouping related ones compactly on a line (e.g.
   "tests: a.spec.ts, b.spec.ts") so coverage stays complete without becoming long-winded.
 - Context: anything important for understanding those changes
