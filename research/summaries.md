@@ -17,6 +17,7 @@ Best so far: **0.4037** (trial 8).
 | 7 | 0.1814 | 0.942 | 0.237 | 0.667 | leaf filenames inside packages: #10 named packages/classes (@supportops/queue, NotificationService) not file basenames -> cov 0.025. Tell it to name each changed file's own filename even inside a shared package/module/worker. |
 | 8 ⭐ | 0.4037 | 0.929 | 0.498 | 0.667 | leaf-file naming, general (no biasing examples): trial 7's concrete #10 filenames likely broke #8. Retry the 'name files inside packages individually' idea as one short general clause, hoping to lift #10 without crashing #8. |
 | 9 | 0.1443 | 0.869 | 0.202 | 0.667 | prose-slash faithfulness: champion loses faith to slashed prose pairs (agents/teams, BullMQ/Redis) parsed as fake paths. Tell it to reserve / for real paths and write prose pairs with words. Expect faith->~1.0 on #8/#10. |
+| 10 | 0.1602 | 1.000 | 0.202 | 0.667 | slash fix v2 (positive-only, no negative examples, appended to existing line): trial 9 backfired via negative-example priming + a new paragraph. Test whether a single positive clause lifts faith (agents/teams, BullMQ/Redis) without disrupting coverage. |
 
 
 ---
@@ -3321,6 +3322,240 @@ Best so far: **0.4037** (trial 8).
 - `[path] assignment/comments`
 
 </details>
+
+### VictorFouquet/supportops#11 — composite **0.2900** · faith 1.000 · cov 0.414 · brev 0.000 (29/70 files, 665 words)
+
+> # Web Application Implementation for SupportOps
+> 
+> ## Overview
+> 
+> This implementation creates a Next.js web application for the SupportOps platform, featuring:
+> 
+> 1. **Authentication system** with secure session management
+> 2. **Ticket management interface** with filtering and comment capabilities
+> 3. **Secure architecture** with server-side API calls
+> 4. **Comprehensive testing** with unit tests and type safety
+> 
+> ## Implementation Details
+> 
+> ### 1. HTTP Client and Session Management
+> 
+> **Files:**
+> - `http.ts`: Handles API requests with authentication
+> - `session.ts`: Manages session cookies
+> - `api.ts`: Wraps API endpoints with type safety
+> 
+> **Key Features:**
+> - Secure HTTP client with automatic authentication token handling
+> - Cookie-based session management with httpOnly cookies
+> - Type-safe API calls with proper error handling
+> 
+> ```typescript
+> // http.ts
+> export class ApiError extends Error {
+>   readonly status: number;
+>   constructor(status: number, body: unknown) {
+>     super(`API request failed with status ${status}`);
+>     this.name = 'ApiError';
+>     this.status = status;
+>     this.body = body;
+>   }
+> }
+> 
+> export async function request<T>(path: string, opts: RequestOptions = {}) {
+>   // Implementation details
+> }
+> ```
+> 
+> ### 2. Authentication System
+> 
+> **Files:**
+> - `login/page.tsx`: Login page
+> - `login-form.tsx`: Login form component
+> - `api/session/route.ts`: Session API route
+> 
+> **Key Features:**
+> - Secure login with token-based authentication
+> - Session management with cookie-based authentication
+> - Route protection with middleware
+> 
+> ```typescript
+> // middleware.ts
+> export function middleware(req: NextRequest) {
+>   // Implementation details
+> }
+> ```
+> 
+> ### 3. Ticket Management Interface
+> 
+> **Files:**
+> - `tickets/page.tsx`: Ticket list page
+> - `tickets/[id]/page.tsx`: Ticket detail page
+> - `ticket-filters.tsx`: Ticket filters component
+> - `comment-thread.tsx`: Comment thread component
+> 
+> **Key Features:**
+> - Filterable ticket list with status/priority filters
+> - Detailed ticket view with comment thread
+> - Status and assignment controls
+> - Commenting functionality
+> 
+> ```typescript
+> // ticket-filters.tsx
+> export function TicketFilters({ current }: { current: { status?: string; priority?: string } }) {
+>   // Implementation details
+> }
+> ```
+> 
+> ### 4. UI Components
+> 
+> **Files:**
+> - `button.tsx`: Custom button component
+> - `field.tsx`: Form field component
+> - `app-header.tsx`: Application header
+> - `badge.tsx`: Status/priority badges
+> 
+> **Key Features:**
+> - Consistent UI components with proper styling
+> - Status/priority visualization with color-coded badges
+> - Responsive layout for different screen sizes
+> 
+> ```typescript
+> // badge.tsx
+> export function Badge({ tone, value }: { tone: 'status' | 'priority'; value: string }) {
+>   // Implementation details
+> }
+> ```
+> 
+> ### 5. Data Management
+> 
+> **Files:**
+> - `lookups.ts`: Name lookup utilities
+> - `format.ts`: Date formatting utilities
+> 
+> **Key Features:**
+> - Efficient data lookup with name indexing
+> - Consistent date formatting across the application
+> 
+> ```typescript
+> // lookups.ts
+> export function nameIndex(items: { id: string; name: string }[]): Map<string, string> {
+>   // Implementation details
+> }
+> ```
+> 
+> ## Testing Strategy
+> 
+> ### Unit Tests
+> 
+> **Files:**
+> - `http.spec.ts`: Tests for HTTP client
+> - `api.spec.ts`: Tests for API wrappers
+> - `login-form.spec.tsx`: Tests for login form
+> - `comment-thread.spec.tsx`: Tests for comment thread
+> 
+> **Key Features:**
+> - Comprehensive test coverage for all components
+> - Mocking of dependencies for isolated testing
+> - Type safety verification with TypeScript
+> 
+> ### Integration Tests
+> 
+> **Files:**
+> - `ticket-list.test.tsx`: Tests for ticket list functionality
+> - `ticket-detail.test.tsx`: Tests for ticket detail view
+> 
+> **Key Features:**
+> - End-to-end testing of user workflows
+> - Verification of state transitions and UI updates
+> - Validation of API interactions
+> 
+> ## Security Considerations
+> 
+> 1. **Secure Session Management:**
+>    - HTTP-only cookies for session tokens
+>    - Secure cookie attributes (SameSite, Secure)
+>    - No client-side storage of sensitive data
+> 
+> 2. **API Security:**
+>    - Server-side API calls only
+>    - No direct browser-to-API requests
+>    - Proper error handling and validation
+> 
+> 3. **Input Validation:**
+>    - All user inputs are validated and sanitized
+>    - Proper handling of edge cases and invalid data
+> 
+> ## Documentation
+> 
+> ### Architecture Documentation
+> 
+> **File:** `docs/architecture.md`
+> 
+> **Key Points:**
+> - Next.js App Router architecture
+> - Server-side API integration
+> - Session management architecture
+> - Component structure and responsibilities
+> 
+> ### Development Guide
+> 
+> **File:** `README.md`
+> 
+> **Key Points:**
+> - How to run the web application
+> - Required environment variables
+> - Development and testing instructions
+> - Deployment considerations
+> 
+> ## Conclusion
+> 
+> This implementation provides a secure, type-safe, and well-tested web application for the SupportOps platform. The architecture follows best practices for Next.js applications, with proper separation of concerns and secure session management. The comprehensive testing strategy ensures that all components work as expected, and the documentation provides clear guidance for developers and maintainers.
+
+
+---
+
+## Trial 10 — composite **0.1602** · faith 1.000 · cov 0.202 · brev 0.667
+
+- **Prompt id:** `2eaf6fbdec03` · **config_fp:** `7ac5eba80010`
+- **Hypothesis / note:** slash fix v2 (positive-only, no negative examples, appended to existing line): trial 9 backfired via negative-example priming + a new paragraph. Test whether a single positive clause lifts faith (agents/teams, BullMQ/Redis) without disrupting coverage.
+
+### VictorFouquet/supportops#8 — composite **0.1905** · faith 1.000 · cov 0.191 · brev 1.000 (4/21 files, 146 words)
+
+> **Purpose:**  
+> Introduces a complete tickets module for the API, enabling ticket creation, management, status transitions, assignment, and threaded comments, along with associated tests and documentation.
+> 
+> **Changes:**  
+> - **Files Added:**  
+>   - `apps/api/src/tickets/` (DTOs, services, controllers for ticket CRUD, status transitions, assignment, and comments)  
+>   - `apps/api/test/tickets.spec.ts` (integration tests for ticket endpoints)  
+>   - `docs/adr/0011-ticket-lifecycle-and-status-transitions.md`, `docs/adr/0012-ticket-authorization-and-comments.md` (architectural decisions for ticket lifecycle and authorization)  
+>   - `docs/architecture.md` (updated to include tickets module)  
+> 
+> **Context:**  
+> The PR implements a feature-rich tickets module using NestJS, class-validator for input validation, and Prisma for database interactions. It includes:  
+> - A governed ticket lifecycle with status transitions (`OPEN → PENDING → RESOLVED → CLOSED`) and `closedAt` management.  
+> - Organization-scoped operations with strict isolation (404 for cross-org access).  
+> - Comment threading with agent/customer authorship and internal notes.  
+> - Comprehensive unit and integration tests for all ticket-related endpoints.  
+> - ADRs documenting key decisions for ticket status transitions and authorization rules.
+
+### VictorFouquet/supportops#10 — composite **0.0000** · faith 1.000 · cov 0.000 · brev 1.000 (0/40 files, 150 words)
+
+> **Purpose:**  
+> Implement asynchronous ticket notifications using a background queue and worker, ensuring notifications are decoupled from request processing and resilient to delivery failures.
+> 
+> **Changes:**  
+> - **New packages:** `@supportops/queue` (BullMQ Redis plumbing) and `@supportops/notifications` (notification domain, transport, and service).  
+> - **API updates:**  
+>   - `TicketsService` and `TicketCommentsService` now emit `TICKET_ASSIGNED` and `TICKET_COMMENTED` notifications via `NotificationService`.  
+>   - `TicketsModule` and `AppModule` integrate `NotificationsModule` to provide the notification service.  
+> - **Worker:** `workers/notification-worker` processes queued notifications using `ConsoleTransport` (logs messages for now).  
+> - **Documentation:** Added ADRs (0013, 0014) and updated architecture docs to describe the async notification flow.  
+> - **Tests:** Integration tests verify notification creation and delivery logic, with Redis-free testing via a null producer.  
+> 
+> **Context:**  
+> Notifications are persisted to the database and enqueued for delivery by a background worker. The system ensures notifications are best-effort (enqueue fails silently) and avoids blocking request processing. Future transports (e.g., email) can replace the console transport without changing callers.
 
 ### VictorFouquet/supportops#11 — composite **0.2900** · faith 1.000 · cov 0.414 · brev 0.000 (29/70 files, 665 words)
 
