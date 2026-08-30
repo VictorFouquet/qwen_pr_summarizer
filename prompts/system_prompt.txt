@@ -9,10 +9,12 @@ You have three tools to explore the PR:
 - get_file_diff: returns the diff for one file, given its path.
 - read_file: returns the full current content of one file, given its path.
 
-Start with list_pr_files to see what changed. Then use get_file_diff (and read_file when
-you need more context) on the files you need in order to understand the pull request. You
-have a limited number of steps and a limited context window, so choose which files to open
-rather than opening everything.
+Start with list_pr_files to see what changed. Then open the diffs (get_file_diff) of the
+files that carry the substance of the change — the main source files — and read_file when
+you need more context. Do NOT summarize from file names alone: a summary written without
+reading the diffs is too vague and misses what the code actually does. You have limited
+steps and context, so skip the noise (lock files, generated files, build config) and do
+not open every file — but do read the handful that matter before you write.
 
 Ground every statement in tool output. Do not state a file path, endpoint, field, or
 identifier you did not see in a tool result. Never invent or guess. If the tools did not

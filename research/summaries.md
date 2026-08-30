@@ -4,11 +4,12 @@ Human-readable companion to `research/log.jsonl`. For each trial: the hypothesis
 
 ## Scoreboard
 
-Best so far: **0.1344** (trial 1).
+Best so far: **0.2518** (trial 2).
 
 | Trial | Composite | Faith | BodySim | Brev | (Cov) | Note |
 |------:|----------:|------:|--------:|-----:|------:|------|
-| 1 ⭐ | 0.1344 | 0.167 | 0.702 | 1.000 | 0.000 | BASELINE (three-tool + earned faithfulness, config 3000814c954c): seed prompt. Faithfulness now rewards grounded specifics (needs reading), empty->0. Expect the lazy baseline (opens ~0 files) to score low -> the gradient to reward reading. |
+| 1 | 0.1344 | 0.167 | 0.702 | 1.000 | 0.000 | BASELINE (three-tool + earned faithfulness, config 3000814c954c): seed prompt. Faithfulness now rewards grounded specifics (needs reading), empty->0. Expect the lazy baseline (opens ~0 files) to score low -> the gradient to reward reading. |
+| 2 ⭐ | 0.2518 | 0.341 | 0.701 | 1.000 | 0.019 | campaign T2: make reading the default. Baseline agent opens ~0 files -> faith ~0. Instruct it to open the diffs of the core source files (skip noise) and never summarize from names alone. Expect files-opened up, faith+bsim up. |
 
 
 ---
@@ -55,6 +56,61 @@ Best so far: **0.1344** (trial 1).
 > 
 > **Context:**  
 > The PR establishes a foundation for a support operations web client, including session handling via HTTP-only cookies and integration with backend services. Changes align with architectural decisions documented in the ADRs.
+
+<details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
+
+- step 0 · `list_pr_files` → 6.0k chars
+- step 1 · `get_file_diff` `apps/web/package.json` → 1.0k chars
+
+</details>
+
+
+---
+
+## Trial 2 — composite **0.2518** · faith 0.341 · bodysim 0.701 · brev 1.000 · (cov 0.019)
+
+- **Prompt id:** `a9aeac259260` · **config_fp:** `1b472c42d619`
+- **Hypothesis / note:** campaign T2: make reading the default. Baseline agent opens ~0 files -> faith ~0. Instruct it to open the diffs of the core source files (skip noise) and never summarize from names alone. Expect files-opened up, faith+bsim up.
+
+### VictorFouquet/supportops#8 — composite **0.2698** · faith 0.394 · bodysim 0.685 · brev 1.000 · (cov 0.000) (0/21 files, 78 words)
+
+> **Purpose:** Introduce ticket management and comment features in the API, including DTOs, services, controllers, and documentation.  
+> **Changes:** Added 18 new files under `apps/api/src/tickets` for ticket lifecycle, status transitions, and comment handling, along with test files and architecture documentation. Key components include DTOs for ticket operations, services for business logic, controllers for endpoints, and updated ADRs.  
+> **Context:** Part of phase 5 of the project plan, enhancing supportops with ticketing system capabilities. Documentation updates clarify authorization rules and system architecture.
+
+<details><summary>Agent budget · 1 tool calls over 1 steps · 0/21 files opened</summary>
+
+- step 0 · `list_pr_files` → 1.9k chars
+
+</details>
+
+### VictorFouquet/supportops#10 — composite **0.4071** · faith 0.500 · bodysim 0.814 · brev 1.000 · (cov 0.000) (0/40 files, 89 words)
+
+> **Purpose:** Introduce an asynchronous notification system and queue infrastructure for the application's ticketing functionality.  
+> **Changes:**  
+> - Added a `notifications` package with services, transports, and rendering logic for handling notifications.  
+> - Created a `queue` package to manage message queuing, including index files and configurations.  
+> - Integrated notification capabilities into the `tickets` module, adding services for comment and ticket management.  
+> - Added test files and documentation to explain the architecture and implementation plan.  
+> **Context:** Part of a phased implementation (Phase 6) to enhance the system with background processing and notification triggers.
+
+<details><summary>Agent budget · 1 tool calls over 1 steps · 0/40 files opened</summary>
+
+- step 0 · `list_pr_files` → 3.5k chars
+
+</details>
+
+### VictorFouquet/supportops#11 — composite **0.0786** · faith 0.130 · bodysim 0.603 · brev 1.000 · (cov 0.057) (4/70 files, 86 words)
+
+> **Purpose:** Initialize a new Next.js web application for the supportops project, including frontend tools and testing infrastructure.  
+> 
+> **Changes:**  
+> - Added a complete Next.js project structure with TypeScript, React 19, ESLint, Vitest, and TailwindCSS.  
+> - Included configuration files for linting, testing, and build processes.  
+> - Introduced API routes and UI components for ticket management (e.g., `tickets/[id]/page.tsx`).  
+> 
+> **Context:**  
+> The PR establishes the foundation for a web client, likely part of a larger system for handling support tickets, with documentation updates and dependency upgrades to align with modern tooling.
 
 <details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
 
