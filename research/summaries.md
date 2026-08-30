@@ -11,6 +11,7 @@ Best so far: **0.0791** (trial 1).
 | 1 ⭐ | 0.0791 | 0.575 | 0.178 | 0.077 | baseline: seed prompt |
 | 2 | 0.0622 | 0.503 | 0.170 | 0.046 | verbatim-path copying: copy paths char-for-char from FILE: lines; model was mangling prefixes (src/api vs apps/api/src) and inventing sibling spec files/packages/branches, tanking faithfulness on #8/#11 |
 | 3 | 0.0622 | 0.503 | 0.170 | 0.046 | PROSE ONLY: forbid code blocks/diffs/reconstructed source up-front; baseline dumped invented code (706/1027 words) that fabricated paths+identifiers and blew brevity. Reframe deliverable as plain-sentence description. |
+| 4 | 0.0578 | 0.963 | 0.062 | 0.683 | GPU re-baseline: seed prompt at num_ctx=32768 (Vulkan/3070, q8_0 KV). New config; trials 1-3 were broken num_ctx=2048. #8/#10 fit window (prompt visible); #11 (38k) overflows. |
 
 
 ---
@@ -2076,4 +2077,213 @@ Best so far: **0.0791** (trial 1).
 - `[path] feature/web-client`
 
 </details>
+
+
+---
+
+## Trial 4 — composite **0.0578** · faith 0.963 · cov 0.062 · brev 0.683
+
+- **Prompt id:** `2feebcd93b97` · **config_fp:** `7ac5eba80010`
+- **Hypothesis / note:** GPU re-baseline: seed prompt at num_ctx=32768 (Vulkan/3070, q8_0 KV). New config; trials 1-3 were broken num_ctx=2048. #8/#10 fit window (prompt visible); #11 (38k) overflows.
+
+### VictorFouquet/supportops#8 — composite **0.1429** · faith 1.000 · cov 0.143 · brev 1.000 (3/21 files, 114 words)
+
+> **Purpose:**  
+> This PR introduces a comprehensive tickets management feature, including ticket creation, retrieval, updates, assignment, status transitions, and threaded comments, all while enforcing organization isolation and validation rules.
+> 
+> **Changes:**  
+> - **Files Added:**  
+>   - `apps/api/src/tickets/` (DTOs, service, controller, tests)  
+>   - `docs/adr/0011-ticket-lifecycle-and-status-transitions.md`  
+>   - `docs/adr/0012-ticket-authorization-and-comments.md`  
+>   - `docs/architecture.md` (updated to document the new feature)  
+> 
+> **Context:**  
+> - **Ticket Lifecycle:** Implements a governed status transition system (`OPEN → PENDING → RESOLVED → CLOSED`) with `closedAt` tracking, defined in ADR 0011.  
+> - **Authorization:** Enforces organization-scoped access (404 for cross-org operations) and nullable assignment validation (ADR 0012).  
+> - **Comments:** Adds nested comment threads with agent/customer attribution and internal flags.  
+> - **Tests:** Includes unit and integration tests for all service methods and endpoints.
+
+### VictorFouquet/supportops#10 — composite **0.0000** · faith 0.889 · cov 0.000 · brev 1.000 (0/40 files, 120 words)
+
+> **Purpose:**  
+> Implement asynchronous ticket notifications using a background queue and worker to decouple notification delivery from request processing, ensuring reliability and scalability.
+> 
+> **Changes:**  
+> - **New packages:** `@supportops/queue` (BullMQ/Redis plumbing) and `@supportops/notifications` (notification domain, transport, and delivery logic).  
+> - **Worker:** `workers/notification-worker` processes queued notifications via a console transport (logs messages).  
+> - **API Integration:** `apps/api` now emits `TICKET_ASSIGNED` and `TICKET_COMMENTED` notifications using `NotificationService`, enqueuing via `@supportops/queue`.  
+> - **Documentation:** Added ADRs (0013, 0014) and updated architecture to reflect the new notification system.  
+> 
+> **Context:**  
+> Notifications are persisted to the database with `PENDING` status and enqueued for delivery. A background worker handles delivery via a pluggable transport (e.g., email), with best-effort enqueueing to avoid request failures. Team-only assignments and unassigned tickets do not trigger notifications.
+
+<details><summary>Unsupported claims (hallucinations)</summary>
+
+- `[path] BullMQ/Redis`
+
+</details>
+
+### VictorFouquet/supportops#11 — composite **0.0306** · faith 1.000 · cov 0.043 · brev 0.050 (3/70 files, 485 words)
+
+> # Web Application Implementation for SupportOps
+> 
+> ## Overview
+> 
+> This implementation creates a Next.js web application for the SupportOps platform, featuring:
+> 
+> 1. **Authentication system** with session cookies
+> 2. **Ticket management** with filters and actions
+> 3. **Commenting system** with internal notes
+> 4. **UI components** for consistent styling
+> 5. **Server-side API client** with type safety
+> 6. **Route protection** with middleware
+> 
+> The implementation follows a test-driven development approach, ensuring all components are thoroughly tested before implementation.
+> 
+> ## Implementation Details
+> 
+> ### 1. HTTP Client and Session Management
+> 
+> ```typescript
+> // http.ts
+> import 'server-only';
+> import { getApiUrl } from './env.js';
+> 
+> export class ApiError extends Error {
+>   readonly status: number;
+>   readonly body: unknown;
+>   constructor(status: number, body: unknown) {
+>     super(`API request failed with status ${status}`);
+>     this.name = 'ApiError';
+>     this.status = status;
+>     this.body = body;
+>   }
+> }
+> 
+> export interface RequestOptions {
+>   method?: string;
+>   token?: string;
+>   body?: unknown;
+>   searchParams?: Record<string, string | undefined>;
+> }
+> 
+> export async function request<T>(path: string, opts: RequestOptions = {}): Promise<T> {
+>   const url = new URL(`${getApiUrl()}${path}`);
+>   for (const [key, value] of Object.entries(opts.searchParams ?? {})) {
+>     if (value !== undefined) url.searchParams.set(key, value);
+>   }
+> 
+>   const headers: Record<string, string> = { accept: 'application/json' };
+>   if (opts.token) headers.authorization = `Bearer ${opts.token}`;
+>   if (opts.body !== undefined) headers['content-type'] = 'application/json';
+> 
+>   const response = await fetch(url.toString(), {
+>     method: opts.method ?? 'GET',
+>     headers,
+>     body: opts.body === undefined ? undefined : JSON.stringify(opts.body),
+>     cache: 'no-store',
+>   });
+> 
+>   const text = await response.text();
+>   const parsed: unknown = text ? JSON.parse(text) : undefined;
+>   if (!response.ok) throw new ApiError(response.status, parsed);
+>   return parsed as T;
+> }
+> ```
+> 
+> ```typescript
+> // session.ts
+> import 'server-only';
+> import { cookies } from 'next/headers';
+> 
+> export const SESSION_COOKIE = 'so_session';
+> 
+> export async function getSessionToken(): Promise<string | undefined> {
+>   const store = await cookies();
+>   return store.get(SESSION_COOKIE)?.value;
+> }
+> 
+> export async function setSessionCookie(token: string): Promise<void> {
+>   const store = await cookies();
+>   store.set(SESSION_COOKIE, token, {
+>     httpOnly: true,
+>     sameSite: 'lax',
+>     secure: process.env.NODE_ENV === 'production',
+>     path: '/',
+>   });
+> }
+> 
+> export async function clearSessionCookie(): Promise<void> {
+>   const store = await cookies();
+>   store.delete(SESSION_COOKIE);
+> }
+> ```
+> 
+> ### 2. API Client
+> 
+> ```typescript
+> // api.ts
+> import 'server-only';
+> import { request } from './http.js';
+> import { getSessionToken } from './session.js';
+> import type {
+>   Customer,
+>   Me,
+>   Paginated,
+>   Ticket,
+>   TicketComment,
+>   TicketPriority,
+>   TicketStatus,
+>   User,
+> } from './api-types.js';
+> 
+> async function token(): Promise<string | undefined> {
+>   return getSessionToken();
+> }
+> 
+> export async function login(creds: {
+>   orgSlug: string;
+>   email: string;
+>   password: string;
+> }): Promise<string> {
+>   const { accessToken } = await request<{ accessToken: string }>('/auth/login', {
+>     method: 'POST',
+>     body: creds,
+>   });
+>   return accessToken;
+> }
+> 
+> export async function getMe(): Promise<Me> {
+>   return request<Me>('/auth/me', { token: await token() });
+> }
+> 
+> export interface TicketFilters {
+>   status?: TicketStatus;
+>   priority?: TicketPriority;
+>   assigneeId?: string;
+>   page?: number;
+> }
+> 
+> export async function listTickets(filters: TicketFilters = {}): Promise<Paginated<Ticket>> {
+>   return request<Paginated<Ticket>>('/tickets', {
+>     token: await token(),
+>     searchParams: {
+>       status: filters.status,
+>       priority: filters.priority,
+>       assigneeId: filters.assigneeId,
+>       page: filters.page ? String(filters.page) : undefined,
+>     },
+>   });
+> }
+> 
+> export async function getTicket(id: string): Promise<Ticket> {
+>   return request<Ticket>(`/tickets/${id}`, { token: await token() });
+> }
+> 
+> export async function listComments(ticketId: string): Promise<Paginated<TicketComment>> {
+>   return request<Paginated<TicketComment>>(`/tickets/${ticketId}/comments`, {
+>     token: await token(),
+>     search
+> ```
 
