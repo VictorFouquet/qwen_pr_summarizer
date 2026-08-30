@@ -4,14 +4,15 @@ Human-readable companion to `research/log.jsonl`. For each trial: the hypothesis
 
 ## Scoreboard
 
-Best so far: **0.6811** (trial 2).
+Best so far: **0.9111** (trial 5).
 
 | Trial | Composite | Faith | BodySim | Brev | (Cov) | Note |
 |------:|----------:|------:|--------:|-----:|------:|------|
 | 1 | 0.6305 | 0.933 | 0.741 | 0.667 | 0.138 | BASELINE (body-similarity objective, config 4f79b185cee7): seed prompt, scored by embedding similarity to the real PR body. Fresh log; not comparable to the archived coverage-era trials. |
-| 2 ⭐ | 0.6811 | 0.970 | 0.764 | 0.667 | 0.138 | bodysim T2: faithfulness fix. #10 & #8 lose faith to prose-slash false paths (BullMQ/Redis, ticket/comment). Positive-only 'slash = real paths only' clause. Coverage no longer scores, so no downside this time. Expect faith->~1.0, bsim held. |
+| 2 | 0.6811 | 0.970 | 0.764 | 0.667 | 0.138 | bodysim T2: faithfulness fix. #10 & #8 lose faith to prose-slash false paths (BullMQ/Redis, ticket/comment). Positive-only 'slash = real paths only' clause. Coverage no longer scores, so no downside this time. Expect faith->~1.0, bsim held. |
 | 3 | 0.6228 | 0.887 | 0.785 | 0.667 | 0.154 | bodysim T3: PR-body prose. Reframe Changes to emphasize behaviors/design decisions (what the code now does and why) over an exhaustive file list, to raise similarity to the real PR body (targets #8 bsim 0.765; #10 maxed; #11 VRAM-locked). |
 | 4 | 0.6779 | 0.944 | 0.775 | 0.667 | 0.194 | bodysim T4: stronger slash clause (one variable). Champion's slash rule didn't stop #10's BullMQ/Redis; make it explicit to join related terms with 'and'/'over'. Target #10 faith 0.889->1.0 (bsim already 1.0 -> composite ->~1.0). |
+| 5 ⭐ | 0.9111 | 0.970 | 0.941 | 1.000 | 0.057 | bodysim T5: champion prompt (seed+slash) with CAPPED grounding (patch<=120 lines, lockfiles omitted; config 8768838657d6). Key test: #11 grounding 38k->21k now fits num_ctx=32768, so its prompt survives and it should write prose instead of code-dumping (was bsim 0.527). |
 
 
 ---
@@ -968,4 +969,63 @@ Best so far: **0.6811** (trial 2).
 > ## Conclusion
 > 
 > This implementation provides a secure, type-safe, and well-tested web application for the SupportOps platform. The architecture follows best practices for Next.js applications, with proper separation of concerns and secure session management. The comprehensive testing strategy ensures that all components work as expected, and the documentation provides clear guidance for developers and maintainers.
+
+
+---
+
+## Trial 5 — composite **0.9111** · faith 0.970 · bodysim 0.941 · brev 1.000 · (cov 0.057)
+
+- **Prompt id:** `b49db9e16ff8` · **config_fp:** `ce443f9857df`
+- **Hypothesis / note:** bodysim T5: champion prompt (seed+slash) with CAPPED grounding (patch<=120 lines, lockfiles omitted; config 8768838657d6). Key test: #11 grounding 38k->21k now fits num_ctx=32768, so its prompt survives and it should write prose instead of code-dumping (was bsim 0.527).
+
+### VictorFouquet/supportops#8 — composite **0.8520** · faith 1.000 · bodysim 0.852 · brev 1.000 · (cov 0.143) (3/21 files, 139 words)
+
+> **Purpose:**  
+> This PR introduces a new `tickets` module to manage ticket creation, status transitions, assignment, and comments, along with associated validation, authorization, and documentation.
+> 
+> **Changes:**  
+> - Added `TicketsModule` and its submodules (`tickets.controller.ts`, `tickets.service.ts`, `ticket-comments.service.ts`, etc.) for ticket CRUD, status governance, and comment handling.  
+> - Introduced DTOs (e.g., `CreateTicketDto`, `AssignTicketDto`) for input validation and data shaping.  
+> - Implemented a status transition rule set (`LEGAL_TRANSITIONS`) to enforce valid ticket state changes (e.g., `OPEN → RESOLVED`).  
+> - Added authorization logic to scope operations by organization (`@CurrentOrg()`), ensuring cross-org access is denied with 404.  
+> - Documented decisions in ADRs (0011 for status rules, 0012 for authorization) and updated architecture docs.  
+> 
+> **Context:**  
+> The module follows existing conventions for authorization, pagination, and error handling. It ensures tickets are immutable post-close, comments are authored by authenticated agents, and all operations are scoped to the caller’s organization.
+
+### VictorFouquet/supportops#10 — composite **0.9091** · faith 0.909 · bodysim 1.000 · brev 1.000 · (cov 0.000) (0/40 files, 118 words)
+
+> **Purpose:** Implement asynchronous notifications for ticket assignments and comments using a Redis-backed queue to decouple delivery from request processing.  
+> 
+> **Changes:**  
+> - Added `packages/queue` (BullMQ/Redis plumbing) and `packages/notifications` (notification domain logic, transport, and service).  
+> - Introduced `workers/notification-worker` to process delivery jobs.  
+> - Updated `apps/api` to integrate `NotificationService` into ticket-related modules (`TicketsService`, `TicketCommentsService`).  
+> - Added ADRs (0013, 0014) defining notification triggers, recipients, and queue architecture.  
+> - Modified tests to use mock notification producers and verify notification persistence.  
+> 
+> **Context:**  
+> Notifications are persisted as `PENDING` rows and enqueued via BullMQ. A background worker delivers them via a pluggable transport (e.g., email). Enqueue is best-effort to avoid blocking request processing. `TICKET_ASSIGNED` notifies new assignees, while `TICKET_COMMENTED` notifies current assignees (excluding the comment author).
+
+<details><summary>Unsupported claims (hallucinations)</summary>
+
+- `[path] BullMQ/Redis`
+
+</details>
+
+### VictorFouquet/supportops#11 — composite **0.9721** · faith 1.000 · bodysim 0.972 · brev 1.000 · (cov 0.029) (2/70 files, 124 words)
+
+> **Purpose:**  
+> Initialize a new Next.js App Router web client for SupportOps, separating the frontend from the API and implementing session management via an httpOnly cookie.
+> 
+> **Changes:**  
+> - Added `apps/web` directory with Next.js, TypeScript, and Tailwind CSS configurations  
+> - Created API client utilities (`src/lib/api.ts`) and environment variable handling (`src/lib/env.ts`)  
+> - Implemented authentication flows (login, session management, logout)  
+> - Set up test infrastructure (Vitest, ESLint, TypeScript type checks)  
+> - Defined UI components for tickets, comments, and user authentication  
+> - Added middleware to enforce session authentication  
+> 
+> **Context:**  
+> The web client is a standalone Next.js app that communicates with the existing API backend. It uses an httpOnly cookie for session management, with all API requests routed through server components and route handlers. This separation ensures security and maintainability.
 
