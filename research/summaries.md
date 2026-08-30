@@ -12,6 +12,7 @@ Best so far: **0.5273** (trial 4).
 | 2 | 0.2518 | 0.341 | 0.701 | 1.000 | 0.019 | campaign T2: make reading the default. Baseline agent opens ~0 files -> faith ~0. Instruct it to open the diffs of the core source files (skip noise) and never summarize from names alone. Expect files-opened up, faith+bsim up. |
 | 3 | 0.1535 | 0.200 | 0.765 | 1.000 | 0.005 | campaign T3: mandatory numbered procedure forcing step 3 (call get_file_diff on EACH main source file before summarizing). Baseline+T2 agent opened ~0 diffs; force actual reading. Watch files-opened in the trace. |
 | 4 ⭐ | 0.5273 | 0.726 | 0.732 | 1.000 | 0.043 | campaign T4: reading procedure (T3) + name the concrete elements seen in the diffs. T3 read but stayed vague (faith 0). Now instruct naming real functions/classes/fields/routes -> grounded specifics -> faith up while keeping T3's bsim gain. |
+| 5 | 0.4230 | 0.526 | 0.783 | 1.000 | 0.009 | campaign T5: concrete read count (3-6 files, more when large). Champion opened only 1/70 on #11 -> bsim 0.582. Push depth to capture more substance, especially large PRs. Watch #11 files-opened + bsim. |
 
 
 ---
@@ -242,6 +243,78 @@ Best so far: **0.5273** (trial 4).
 > 
 > **Context:**  
 > The PR establishes a frontend foundation for a support tool, enabling features like ticket tracking, user authentication, and data interaction with a backend API. Documentation updates clarify architecture decisions and project scope.
+
+<details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
+
+- step 0 · `list_pr_files` → 6.0k chars
+- step 1 · `get_file_diff` `apps/web/src/lib/api.ts` → 2.9k chars
+
+</details>
+
+
+---
+
+## Trial 5 — composite **0.4230** · faith 0.526 · bodysim 0.783 · brev 1.000 · (cov 0.009)
+
+- **Prompt id:** `b9ac5d6ab26c` · **config_fp:** `1b472c42d619`
+- **Hypothesis / note:** campaign T5: concrete read count (3-6 files, more when large). Champion opened only 1/70 on #11 -> bsim 0.582. Push depth to capture more substance, especially large PRs. Watch #11 files-opened + bsim.
+
+### VictorFouquet/supportops#8 — composite **0.6111** · faith 0.800 · bodysim 0.764 · brev 1.000 · (cov 0.000) (0/21 files, 122 words)
+
+> **Purpose:**  
+> Implement ticket management and comment features for the supportops application, including lifecycle status transitions and authorization rules.
+> 
+> **Changes:**  
+> - Added a `TicketsController` with endpoints for listing tickets, creating/updating tickets (including assignment and status changes), and managing comments.  
+> - Introduced DTOs (e.g., `CreateTicketDto`, `UpdateTicketStatusDto`, `CreateTicketCommentDto`) to define request structures for ticket operations and comments.  
+> - Created services (`TicketsService`, `TicketCommentsService`) to handle business logic for tickets and comments.  
+> - Added ADR documents (0011, 0012) to formalize ticket status transitions, authorization rules, and comment workflows.  
+> 
+> **Context:**  
+> The changes align with the "Phase 5" plan for tickets and comments, integrating authorization checks and lifecycle management for tickets. The controller and services are designed to work with the existing authentication system (`JwtAuthGuard`) and organization context (`CurrentOrg`).
+
+<details><summary>Agent budget · 2 tool calls over 2 steps · 1/21 files opened</summary>
+
+- step 0 · `list_pr_files` → 1.9k chars
+- step 1 · `get_file_diff` `apps/api/src/tickets/tickets.controller.ts` → 3.0k chars
+
+</details>
+
+### VictorFouquet/supportops#10 — composite **0.6579** · faith 0.778 · bodysim 0.846 · brev 1.000 · (cov 0.000) (0/40 files, 105 words)
+
+> **Purpose:**  
+> Implement a notification system to alert users when tickets are assigned or comments are added.  
+> 
+> **Changes:**  
+> - Added `NotificationService` integration to `TicketsService` and `TicketCommentsService` to send notifications via `ticketAssigned` and `ticketCommented` methods.  
+> - Trigger notifications when a ticket is assigned to a new assignee or when a comment is added by a non-assignee.  
+> - Introduced new packages (`notifications`, `queue`) and a worker (`notification-worker`) to handle asynchronous notification delivery and processing.  
+> 
+> **Context:**  
+> The system uses ADR documents to define notification triggers and recipients, with notifications sent via transports like console or queue-based workers. Changes include both service logic updates and infrastructure for scalable notification handling.
+
+<details><summary>Agent budget · 3 tool calls over 3 steps · 2/40 files opened</summary>
+
+- step 0 · `list_pr_files` → 3.5k chars
+- step 1 · `get_file_diff` `apps/api/src/tickets/tickets.service.ts` → 2.1k chars
+- step 2 · `get_file_diff` `apps/api/src/tickets/ticket-comments.service.ts` → 1.4k chars
+
+</details>
+
+### VictorFouquet/supportops#11 — composite **0.0000** · faith 0.000 · bodysim 0.740 · brev 1.000 · (cov 0.029) (2/70 files, 116 words)
+
+> **Purpose:**  
+> Implement a web interface for support operations, integrating with a backend API for user authentication, ticket management, and session handling.
+> 
+> **Changes:**  
+> - Added a Next.js web app with API client logic (`api.ts`) for authenticated requests, including login, user data retrieval, ticket listing, comment management, and status/assignment updates.  
+> - Introduced session token handling (`session.ts`) and middleware for authentication.  
+> - Created API route handlers for session expiration and ticket-related endpoints.  
+> - Added UI components for ticket filters, comment forms, and status controls.  
+> - Documented architecture decisions for the web client, session handling, and expired session workflows.  
+> 
+> **Context:**  
+> The PR establishes a foundation for a support operations web app, focusing on backend integration, authentication, and ticket management features.
 
 <details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
 
