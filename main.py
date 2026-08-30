@@ -59,24 +59,6 @@ MAX_STEPS = 8
 # model's maximum so the prompt + a full PR's grounding coexist. Requires adequate memory
 # for the KV cache (~5-6GB at this size, on top of the ~6GB model).
 NUM_CTX = int(os.environ.get("PR_SUMMARIZER_NUM_CTX", "40960"))
-# A PR summary is high-level context, not a line-by-line review, and one giant file (a
-# generated lockfile, a big design doc, vendored code) can be half the diff and crowd the
-# real changes out of the context window. Cap each file's patch so no single file
-# dominates the grounding, and omit lockfile bodies entirely — they carry no summary value.
-PATCH_MAX_LINES = int(os.environ.get("PR_SUMMARIZER_PATCH_MAX_LINES", "120"))
-LOCKFILES = {"pnpm-lock.yaml", "package-lock.json", "yarn.lock", "poetry.lock", "Cargo.lock"}
-
-
-def _render_patch(filename: str, patch: str | None) -> str:
-    """The patch text the model sees for one file — lockfiles omitted, long patches capped."""
-    if filename.rsplit("/", 1)[-1] in LOCKFILES:
-        return "(lock file — patch omitted)"
-    text = patch or "(no patch available)"
-    lines = text.split("\n")
-    if len(lines) > PATCH_MAX_LINES:
-        kept = "\n".join(lines[:PATCH_MAX_LINES])
-        return f"{kept}\n... (patch truncated, {len(lines) - PATCH_MAX_LINES} more lines)"
-    return text
 
 
 def frozen_config() -> dict:
@@ -85,8 +67,7 @@ def frozen_config() -> dict:
         "temperature": TEMPERATURE,
         "max_steps": MAX_STEPS,
         "num_ctx": NUM_CTX,
-        "patch_max_lines": PATCH_MAX_LINES,
-        "tools": ["get_pr_files", "read_file"],
+        "tools": ["list_pr_files", "get_file_diff", "read_file"],
         "metric": {
             "formula": "faithfulness * body_similarity * (0.7 + 0.3*brevity)",
             "body_similarity": "cosine(summary, reference_pr_body) rescaled [0.60,0.90]->[0,1]",
@@ -125,11 +106,19 @@ def _github() -> Github:
 
 
 def _build_tools(gh: Github, captured: list[str]):
-    """The two frozen tools. Every tool result is captured as grounding for scoring."""
+    """The three PR-exploration tools. Every tool result is captured as grounding for scoring.
+
+    ``list_pr_files`` returns only the table of contents (paths + line counts, no diffs);
+    the model then chooses which files to open with ``get_file_diff`` / ``read_file``. The
+    relevance decision lives in the model, steered by the prompt — not in these tools.
+    """
 
     @tool
-    def get_pr_files(repo: str, pr_number: int) -> str:
-        """Get the files changed by a pull request, including their patches."""
+    def list_pr_files(repo: str, pr_number: int) -> str:
+        """List every file a pull request changes, with status and added/removed line counts.
+
+        Returns no diffs — call get_file_diff on a path to see what changed in that file.
+        """
         pr = gh.get_repo(repo).get_pull(pr_number)
         blocks = []
         for f in pr.get_files():
@@ -137,12 +126,26 @@ def _build_tools(gh: Github, captured: list[str]):
                 f"FILE: {f.filename}\n"
                 f"STATUS: {f.status}\n"
                 f"ADDITIONS: {f.additions}\n"
-                f"DELETIONS: {f.deletions}\n"
-                f"PATCH:\n{_render_patch(f.filename, f.patch)}"
+                f"DELETIONS: {f.deletions}"
             )
-        out = "\n\n".join(blocks)
+        out = f"{len(blocks)} changed files:\n\n" + "\n\n".join(blocks)
         captured.append(out)
         return out
+
+    @tool
+    def get_file_diff(repo: str, pr_number: int, path: str) -> str:
+        """Get the diff (patch) for one changed file in a pull request, by its exact path."""
+        pr = gh.get_repo(repo).get_pull(pr_number)
+        for f in pr.get_files():
+            if f.filename == path:
+                out = (
+                    f"FILE: {f.filename}\n"
+                    f"STATUS: {f.status}\n"
+                    f"PATCH:\n{f.patch or '(no textual patch — binary or too large)'}"
+                )
+                captured.append(out)
+                return out
+        return f"No changed file named {path!r} in this PR. Call list_pr_files for the exact paths."
 
     @tool
     def read_file(
@@ -164,7 +167,7 @@ def _build_tools(gh: Github, captured: list[str]):
         captured.append(out)
         return out
 
-    return [get_pr_files, read_file]
+    return [list_pr_files, get_file_diff, read_file]
 
 
 @dataclass
@@ -176,6 +179,10 @@ class SummaryResult:
     verification: Verification
     metrics: Metrics
     steps: int
+    # Ordered trace of the agent's tool calls (name + args + result size). This is where
+    # the researcher sees how the agent spent its budget: which files it opened, which it
+    # skipped, and where it burned steps on nothing.
+    tool_calls: list[dict]
 
 
 def summarize_pr(
@@ -208,10 +215,16 @@ def summarize_pr(
 
     response = llm.invoke(messages)
     steps = 0
+    trace: list[dict] = []
     while getattr(response, "tool_calls", None) and steps < max_steps:
         messages.append(response)
         for tc in response.tool_calls:
-            result = tool_map[tc["name"]].invoke(tc["args"])
+            name = tc["name"]
+            if name in tool_map:
+                result = tool_map[name].invoke(tc["args"])
+            else:
+                result = f"Unknown tool {name!r}. Available: {', '.join(tool_map)}."
+            trace.append({"step": steps, "name": name, "args": tc["args"], "result_chars": len(result)})
             messages.append(ToolMessage(content=result, tool_call_id=tc["id"]))
         response = llm.invoke(messages)
         steps += 1
@@ -220,7 +233,7 @@ def summarize_pr(
     grounding = "\n\n".join(captured)
     verification = verify(summary, grounding)
     metrics = compute_metrics(summary, grounding, verification, reference_body=reference_body)
-    return SummaryResult(repo, pr_number, summary, grounding, verification, metrics, steps)
+    return SummaryResult(repo, pr_number, summary, grounding, verification, metrics, steps, trace)
 
 
 def _cli() -> None:

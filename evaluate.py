@@ -95,6 +95,13 @@ def main() -> None:
             f"composite={p['composite']} faith={p['faithfulness']} bsim={p['body_similarity']} "
             f"(cov={p['coverage']}, {p['files_referenced']}/{p['changed_files']} files, {p['word_count']} words)"
         )
+        calls = p.get("tool_calls") or []
+        if calls:
+            from collections import Counter
+            by = Counter(c["name"] for c in calls)
+            opened = by.get("get_file_diff", 0) + by.get("read_file", 0)
+            usage = ", ".join(f"{n}×{k}" for k, n in by.items())
+            print(f"  budget: {len(calls)} calls / {p.get('steps','?')} steps · opened {opened}/{p['changed_files']} files · {usage}")
         if p["unsupported"]:
             print("  unsupported claims (fix these in the prompt):")
             for claim in p["unsupported"]:

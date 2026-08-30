@@ -29,6 +29,10 @@ def evaluate_prompt(prompt: str, eval_set: list[dict], run_fn: Callable) -> dict
         # grounded in tool output, plus the summary text that produced them.
         row["unsupported"] = [str(c) for c in result.verification.unsupported]
         row["summary"] = result.summary
+        # How the agent spent its budget (which files it opened / skipped) — surfaced so the
+        # researcher can tune the reading policy through the prompt.
+        row["tool_calls"] = getattr(result, "tool_calls", [])
+        row["steps"] = getattr(result, "steps", None)
         per_pr.append(row)
 
     if per_pr:

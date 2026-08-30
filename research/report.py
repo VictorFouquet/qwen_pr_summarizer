@@ -75,6 +75,19 @@ def render(trials: list[dict]) -> str:
                 for claim in p["unsupported"]:
                     lines.append(f"- `{claim}`")
                 lines.append("\n</details>\n")
+            calls = p.get("tool_calls") or []
+            if calls:
+                opened = sum(1 for c in calls if c["name"] in ("get_file_diff", "read_file"))
+                lines.append(
+                    f"<details><summary>Agent budget · {len(calls)} tool calls over "
+                    f"{p.get('steps', '?')} steps · {opened}/{p['changed_files']} files opened</summary>\n"
+                )
+                for c in calls:
+                    path = c.get("args", {}).get("path")
+                    where = f" `{path}`" if path else ""
+                    kb = c.get("result_chars", 0) / 1000
+                    lines.append(f"- step {c.get('step','?')} · `{c['name']}`{where} → {kb:.1f}k chars")
+                lines.append("\n</details>\n")
     return "\n".join(lines) + "\n"
 
 

@@ -1,0 +1,506 @@
+<title>The Prompt Nobody Read</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Serif:ital@0;1&display=swap">
+<style>
+:root{
+  --bg:#eef1ef; --surface:#ffffff; --surface-2:#f7f9f7; --ink:#151f1e;
+  --muted:#586b69; --faint:#869896; --line:#dde3e0; --line-2:#eceeeb;
+  --accent:#0f7d97; --accent-ink:#0b5f74;
+  --c1:#1288a8; --c2:#bf7d23; --c3:#6f5bd0;
+  --good:#1f9e6f; --bad:#c0492f; --good-soft:#e4f3ec; --bad-soft:#f7e7e2;
+  --shadow:0 1px 2px rgba(20,40,38,.05),0 8px 24px -12px rgba(20,40,38,.14);
+  --maxw:1080px; --readw:66ch;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#0d1315; --surface:#141d1f; --surface-2:#101819; --ink:#e9efec; --muted:#93a3a1; --faint:#63736f;
+  --line:#243130; --line-2:#1b2626; --accent:#38c0dd; --accent-ink:#7fdcee;
+  --c1:#0e93b6; --c2:#c2872b; --c3:#7a5fd0;
+  --good:#35c08a; --bad:#e07358; --good-soft:#123028; --bad-soft:#2e1c17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px -14px rgba(0,0,0,.6);
+}}
+:root[data-theme="dark"]{
+  --bg:#0d1315; --surface:#141d1f; --surface-2:#101819; --ink:#e9efec; --muted:#93a3a1; --faint:#63736f;
+  --line:#243130; --line-2:#1b2626; --accent:#38c0dd; --accent-ink:#7fdcee;
+  --c1:#0e93b6; --c2:#c2872b; --c3:#7a5fd0;
+  --good:#35c08a; --bad:#e07358; --good-soft:#123028; --bad-soft:#2e1c17;
+  --shadow:0 1px 2px rgba(0,0,0,.3),0 12px 34px -14px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--bg);color:var(--ink);
+  font-family:"IBM Plex Sans",system-ui,sans-serif;font-size:17px;line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.mono{font-family:"IBM Plex Mono",ui-monospace,monospace}
+h1,h2,h3{font-family:"IBM Plex Mono","IBM Plex Sans",monospace;font-weight:600;line-height:1.12;text-wrap:balance;margin:0}
+p{margin:0 0 1em}
+a{color:var(--accent-ink)}
+.wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+.read{max-width:var(--readw)}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;letter-spacing:.16em;text-transform:uppercase;color:var(--accent-ink)}
+.tabnum{font-variant-numeric:tabular-nums}
+
+/* ---- top bar ---- */
+header.top{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 86%,transparent);
+  backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+header.top .wrap{display:flex;align-items:center;justify-content:space-between;height:56px}
+.brand{font-family:"IBM Plex Mono",monospace;font-size:13px;font-weight:600;letter-spacing:.02em;display:flex;gap:9px;align-items:center}
+.brand .dot{width:9px;height:9px;border-radius:50%;background:var(--good);box-shadow:0 0 0 3px color-mix(in srgb,var(--good) 22%,transparent)}
+.toggle{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.06em;background:var(--surface);color:var(--muted);
+  border:1px solid var(--line);border-radius:7px;padding:7px 11px;cursor:pointer;display:flex;gap:7px;align-items:center}
+.toggle:hover{color:var(--ink);border-color:var(--faint)}
+.toggle:focus-visible,button:focus-visible,a:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+/* ---- hero ---- */
+.hero{padding:76px 0 40px;border-bottom:1px solid var(--line)}
+.hero .kicker{margin-bottom:22px}
+.hero h1{font-size:clamp(38px,6.4vw,74px);letter-spacing:-.02em}
+.hero .dek{font-size:clamp(18px,2.3vw,22px);color:var(--muted);margin-top:22px;max-width:60ch;line-height:1.5}
+.hero .dek b{color:var(--ink);font-weight:600}
+.byline{margin-top:26px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;color:var(--faint);letter-spacing:.03em;display:flex;flex-wrap:wrap;gap:8px 18px}
+.byline span{white-space:nowrap}
+
+/* ---- arc strip ---- */
+.arc{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:stretch;margin-top:46px}
+.arc .step{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px 18px 16px;box-shadow:var(--shadow)}
+.arc .step .lab{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.arc .step .num{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:clamp(28px,4.6vw,44px);letter-spacing:-.02em;margin-top:6px;line-height:1}
+.arc .step .cap{font-size:13px;color:var(--muted);margin-top:9px;line-height:1.4}
+.arc .step.broken .num{color:var(--bad)} .arc .step.mid .num{color:var(--c2)} .arc .step.win .num{color:var(--good)}
+.arc .join{align-self:center;color:var(--faint);font-family:"IBM Plex Mono",monospace;font-size:22px;padding:0 2px}
+@media(max-width:720px){.arc{grid-template-columns:1fr;}.arc .join{transform:rotate(90deg);justify-self:center}}
+
+/* ---- section rhythm ---- */
+section{padding:56px 0;border-bottom:1px solid var(--line)}
+.act-head{display:flex;gap:18px;align-items:baseline;margin-bottom:26px}
+.act-head .no{font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:13px;color:var(--accent-ink);letter-spacing:.1em;border:1px solid var(--line);border-radius:6px;padding:3px 9px;white-space:nowrap;background:var(--surface-2)}
+.act-head h2{font-size:clamp(24px,3.4vw,34px);letter-spacing:-.015em}
+.lede{font-size:19px;color:var(--muted);max-width:60ch;line-height:1.55}
+h3{font-size:18px;margin:30px 0 10px}
+.small{font-size:14.5px;color:var(--muted)}
+
+/* ---- figure ---- */
+figure{margin:30px 0 8px;background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:22px 22px 16px;box-shadow:var(--shadow)}
+figure.wide{margin:30px 0 8px}
+figcaption{font-size:13.5px;color:var(--muted);margin-top:14px;line-height:1.5;border-top:1px solid var(--line-2);padding-top:12px}
+figcaption b{color:var(--ink);font-weight:600}
+.fig-title{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint);margin-bottom:4px}
+.fig-sub{font-size:15px;color:var(--ink);font-weight:500;margin-bottom:16px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;margin:2px 0 14px;font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+.legend .k{display:flex;align-items:center;gap:7px}
+.legend .sw{width:14px;height:4px;border-radius:2px}
+.chart svg{display:block;width:100%;height:auto;overflow:visible;font-family:"IBM Plex Mono",monospace}
+.chart text{fill:var(--muted)}
+.axis line,.axis path{stroke:var(--line)}
+.grid line{stroke:var(--line-2)}
+.tip{position:fixed;pointer-events:none;z-index:60;background:var(--ink);color:var(--bg);font-family:"IBM Plex Mono",monospace;
+  font-size:12px;line-height:1.5;padding:8px 10px;border-radius:8px;opacity:0;transition:opacity .09s;box-shadow:var(--shadow);white-space:nowrap}
+.tip b{color:var(--bg)}
+
+/* ---- truncation diagram ---- */
+.trunc{display:flex;flex-direction:column;gap:18px}
+.trow{display:flex;flex-direction:column;gap:8px}
+.trow .rl{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.04em;color:var(--muted);display:flex;justify-content:space-between}
+.tbar{position:relative;height:46px;border-radius:9px;overflow:hidden;display:flex;border:1px solid var(--line)}
+.seg{display:flex;align-items:center;justify-content:center;font-family:"IBM Plex Mono",monospace;font-size:12px;font-weight:500;color:#fff;overflow:hidden;white-space:nowrap}
+.seg.sys{background:var(--good)} .seg.tool{background:var(--c1);color:#fff} .seg.evict{position:relative}
+.seg.evict::after{content:"";position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 6px,color-mix(in srgb,var(--bad) 55%,transparent) 6px,color-mix(in srgb,var(--bad) 55%,transparent) 12px)}
+.window{position:relative;margin-top:2px;height:22px}
+.window .brk{position:absolute;top:0;height:100%;border:2px solid var(--accent);border-radius:6px;background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.window .wl{position:absolute;top:2px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--accent-ink);padding:0 6px}
+.tnote{font-size:13px;color:var(--muted)}
+.tnote.bad{color:var(--bad)} .tnote.good{color:var(--good)}
+
+/* ---- pipeline ---- */
+.pipe{display:flex;flex-wrap:wrap;align-items:stretch;gap:0;font-family:"IBM Plex Mono",monospace}
+.node{background:var(--surface-2);border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0;flex:1 1 0;display:flex;flex-direction:column;gap:3px}
+.node .nt{font-size:12px;font-weight:600;letter-spacing:.02em}
+.node .nd{font-size:11.5px;color:var(--muted);line-height:1.35;font-family:"IBM Plex Sans",sans-serif}
+.node.hi{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.arrow{align-self:center;color:var(--faint);padding:0 6px;font-size:16px}
+.forks{display:flex;flex-direction:column;gap:8px;flex:1.3 1 0}
+@media(max-width:760px){.pipe{flex-direction:column}.arrow{transform:rotate(90deg)}.forks{flex-direction:column}}
+
+/* ---- scoreboard table ---- */
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:var(--surface);box-shadow:var(--shadow)}
+table{border-collapse:collapse;width:100%;font-size:14px;min-width:560px}
+th,td{text-align:right;padding:11px 14px;border-bottom:1px solid var(--line-2);font-variant-numeric:tabular-nums;font-family:"IBM Plex Mono",monospace}
+th:first-child,td:first-child{text-align:left}
+thead th{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--faint);font-weight:500;background:var(--surface-2);position:sticky;top:56px}
+tbody tr:hover{background:var(--surface-2)}
+td .note{font-family:"IBM Plex Sans",sans-serif;color:var(--muted);font-size:12.5px}
+.badge{font-family:"IBM Plex Mono",monospace;font-size:11px;padding:2px 7px;border-radius:20px;font-weight:500}
+.badge.win{background:var(--good-soft);color:var(--good)} .badge.rev{background:var(--bad-soft);color:var(--bad)}
+tr.champ td{background:color-mix(in srgb,var(--good) 8%,transparent)}
+tr.champ td:first-child{box-shadow:inset 3px 0 0 var(--good)}
+
+/* ---- learnings ---- */
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin-top:12px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:13px;padding:20px;box-shadow:var(--shadow)}
+.card .ci{font-family:"IBM Plex Mono",monospace;font-size:12px;letter-spacing:.06em;color:var(--accent-ink);margin-bottom:9px}
+.card h3{font-size:16.5px;margin:0 0 8px}
+.card p{font-size:14.5px;color:var(--muted);margin:0}
+
+/* ---- pull ---- */
+.pull{font-family:"IBM Plex Serif",Georgia,serif;font-size:clamp(21px,3vw,27px);line-height:1.4;font-style:italic;
+  color:var(--ink);border-left:3px solid var(--accent);padding:6px 0 6px 22px;margin:34px 0;max-width:56ch;text-wrap:balance}
+
+/* ---- specs list ---- */
+.specs{display:grid;grid-template-columns:auto 1fr;gap:0;font-family:"IBM Plex Mono",monospace;font-size:13.5px;border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.specs dt{padding:11px 16px;background:var(--surface-2);color:var(--muted);border-bottom:1px solid var(--line-2);letter-spacing:.03em;font-size:12px;text-transform:uppercase}
+.specs dd{padding:11px 16px;margin:0;border-bottom:1px solid var(--line-2);color:var(--ink)}
+.specs dt:last-of-type,.specs dd:last-of-type{border-bottom:none}
+code{font-family:"IBM Plex Mono",monospace;font-size:.9em;background:var(--surface-2);border:1px solid var(--line-2);border-radius:5px;padding:1px 5px}
+
+footer{padding:44px 0 70px;color:var(--faint);font-family:"IBM Plex Mono",monospace;font-size:12.5px;line-height:1.7}
+footer b{color:var(--muted)}
+@media(prefers-reduced-motion:reduce){*{transition:none!important}}
+@media(max-width:720px){figure.wide{margin-left:0}body{font-size:16px}}
+</style>
+
+<header class="top"><div class="wrap">
+  <div class="brand"><span class="dot"></span>pr-summarizer · field notes</div>
+  <button class="toggle" id="tg" aria-label="Toggle color theme"><span id="tgi">◐</span><span id="tgt">Theme</span></button>
+</div></header>
+
+<div class="hero"><div class="wrap">
+  <div class="kicker eyebrow">Prompt-optimization log · local Qwen3-8B</div>
+  <h1>The Prompt<br>Nobody Read</h1>
+  <p class="dek">A prompt-optimization loop can run for hours, commit every trial, and draw a tidy graph — while the model it is tuning <b>never sees the prompt at all</b>. This is the log of finding that out, fixing it, discovering the metric itself was wrong, and finally getting a small local model to write a genuinely good PR summary.</p>
+  <div class="byline">
+    <span>REPO · qwen_pr_summarizer</span><span>MODEL · qwen3:8b</span>
+    <span>GPU · RTX 3070 (8 GB, Vulkan)</span><span>EVAL · 3 PRs</span><span>TRIALS · 15</span>
+  </div>
+
+  <div class="arc" role="img" aria-label="The arc: broken baseline 0.058, a metric-gaming peak of 0.404, and the final 0.911.">
+    <div class="step broken"><div class="lab">Start · loop inert</div><div class="num tabnum">0.06</div><div class="cap">Three different prompts, byte-identical output. The prompt was being truncated away.</div></div>
+    <div class="join">→</div>
+    <div class="step mid"><div class="lab">Peak · but gamed</div><div class="num tabnum">0.40</div><div class="cap">A 7× climb — mostly the summarizer learning to <em>list filenames</em>, which is not the job.</div></div>
+    <div class="join">→</div>
+    <div class="step win"><div class="lab">End · right metric</div><div class="num tabnum">0.91</div><div class="cap">Scored against real PR bodies, with the diff-noise removed. Clean prose summaries.</div></div>
+  </div>
+</div></div>
+
+<main>
+
+<!-- SETUP -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">SETUP</span><h2>One variable, everything else frozen</h2></div>
+  <p class="lede read">The system is a grounded PR summarizer: a local Qwen model reads a pull request through two tools, then writes a summary. A harness scores that summary and lets a researcher tune <em>only</em> the system prompt, so any change in the score is caused by the prompt alone.</p>
+
+  <figure class="wide">
+    <div class="fig-title">Figure 0 · the pipeline</div>
+    <div class="fig-sub">The model only ever sees tool output — never the PR description. The description is held out as the answer key.</div>
+    <div class="pipe">
+      <div class="node"><span class="nt">Pull request</span><span class="nd">diff + changed files on GitHub</span></div>
+      <span class="arrow">→</span>
+      <div class="node"><span class="nt">get_pr_files</span><span class="nd">files &amp; patches → "grounding"</span></div>
+      <span class="arrow">→</span>
+      <div class="node hi"><span class="nt">Qwen3-8B</span><span class="nd">system prompt + grounding → summary</span></div>
+      <span class="arrow">→</span>
+      <div class="forks">
+        <div class="node"><span class="nt">faithfulness ⟂ diff</span><span class="nd">every claim must appear in the grounding</span></div>
+        <div class="node"><span class="nt">body-similarity ⟂ real PR body</span><span class="nd">embedding distance to the held-out description</span></div>
+      </div>
+    </div>
+    <figcaption>The single tunable variable is the system prompt. The score is <b>composite = faithfulness × quality × (0.7 + 0.3·brevity)</b> averaged over three real PRs of very different size (21, 40 and 70 changed files).</figcaption>
+  </figure>
+</div></section>
+
+<!-- ACT I -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">ACT I</span><h2>The loop was doing nothing</h2></div>
+  <p class="lede read">The first sign was eerie: the baseline scored 0.079, an edit scored 0.062, another edit scored exactly 0.062 — with <em>byte-identical</em> summaries for two of the three PRs. Different prompts cannot produce identical greedy output unless the model isn't conditioning on them.</p>
+  <p class="read">The cause was mundane and total. Ollama's default context window is <b>2048 tokens</b>. The tool output for these PRs is 24,000–38,000 tokens. When the input overflows, llama.cpp keeps the <em>tail</em> and discards the head — and the system prompt sits at the head. The model was reading the end of a diff and none of its instructions.</p>
+
+  <figure class="read">
+    <div class="fig-title">Figure 1 · why the prompt vanished</div>
+    <div class="fig-sub">A 2048-token window over a 25,000-token input keeps only the last sliver.</div>
+    <div class="trunc">
+      <div class="trow">
+        <div class="rl"><span>Default · num_ctx = 2048</span><span class="tnote bad">prompt evicted</span></div>
+        <div class="tbar">
+          <div class="seg sys evict" style="flex:0 0 4%">SYS</div>
+          <div class="seg tool evict" style="flex:1 1 auto">TOOL OUTPUT · 25k tokens</div>
+        </div>
+        <div class="window"><div class="brk" style="left:92%;right:0"></div><div class="wl" style="left:auto;right:0;transform:translateX(0)">2048 kept →</div></div>
+        <div class="tnote bad">Hatched = discarded. The window catches only the diff's tail; the model never reads the instructions.</div>
+      </div>
+      <div class="trow">
+        <div class="rl"><span>Fixed · num_ctx = 32768 + capped grounding</span><span class="tnote good">prompt retained</span></div>
+        <div class="tbar">
+          <div class="seg sys" style="flex:0 0 5%">SYS</div>
+          <div class="seg tool" style="flex:0 0 62%">CAPPED GROUNDING · ≤21k</div>
+          <div class="seg" style="flex:1 1 auto;background:var(--surface-2);color:var(--faint)">head-room</div>
+        </div>
+        <div class="window"><div class="brk" style="left:0;right:0"></div><div class="wl" style="left:0">32768 window covers everything</div></div>
+        <div class="tnote good">The prompt and the whole (trimmed) diff fit — now editing the prompt actually changes the output.</div>
+      </div>
+    </div>
+    <figcaption>Determinism was the tell: with temperature 0, identical outputs across different prompts is only possible if the prompt is gone. This one config line silently invalidated <b>every</b> trial until it was found.</figcaption>
+  </figure>
+
+  <div class="act-head" style="margin-top:44px"><span class="no">ACT II</span><h2>Getting onto the GPU without buying one</h2></div>
+  <p class="lede read">Raising the window meant the model had to run fast. But the machine's Ollama was the snap build, which was pinned 100% to CPU.</p>
+  <p class="read">Two blockers, no root access: snap confinement never staged the NVIDIA libraries, and the newer Ollama's CUDA needs a driver 550+ (the box has 535). The way through was a userspace Ollama on the <b>Vulkan</b> backend, pinned to the discrete GPU and reusing the model already on disk — no <span class="mono">sudo</span>, no download of the 5 GB model, and with <span class="mono">q8_0</span> KV-cache quantization so a 32k window fits in 8 GB. Result: a trial went from <b>28 minutes to ~12</b>, and the loop could finally iterate.</p>
+</div></section>
+
+<!-- ACT III -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">ACT III</span><h2>Optimizing the wrong thing</h2></div>
+  <p class="lede read">With the prompt finally visible, the score climbed fast — 0.058 to 0.404, a 7× gain over ten trials. It was also, in hindsight, the model getting <em>worse</em> at its actual job.</p>
+  <p class="read">The original metric rewarded <b>coverage</b>: the fraction of changed filenames the summary echoes. So the optimizer learned to echo filenames. Each winning edit pushed the model further from prose and toward a file manifest — faithful, dense, and useless as the thing a reviewer actually reads.</p>
+
+  <figure class="wide chart" id="fig-v1">
+    <div class="fig-title">Figure 2 · experiment v1 — the coverage metric</div>
+    <div class="fig-sub">Composite rises as coverage rises. But the two grey trials at the start are the inert period — the prompt wasn't even being read.</div>
+    <div class="legend" id="leg-v1"></div>
+  </figure>
+
+  <p class="pull read">A rising number meant a worse summary. The metric was measuring the wrong thing, faithfully.</p>
+  <p class="read small">Two behaviours showed up repeatedly and are worth remembering: <b>negative examples backfire</b> — telling the model “don't write <span class="mono">agents/teams</span>” primed it to emit exactly that — and the model is <b>extremely fragile to wording</b>: an instruction that helped the 21-file PR routinely broke the 70-file one.</p>
+</div></section>
+
+<!-- ACT IV -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">ACT IV</span><h2>Scoring against the real thing</h2></div>
+  <p class="lede read">If the job is to write a PR body, the honest measure is: how close is the summary to the PR body a human actually wrote? Every eval PR already has one — so it becomes a held-out answer key.</p>
+  <p class="read">The new signal is <b>body-similarity</b>: cosine distance between an embedding of the summary and an embedding of the real PR description (a local <span class="mono">nomic-embed-text</span> model), rescaled so vague filler ≈ 0 and a faithful body ≈ 1. It's deterministic and reference-based — a stable optimization target, unlike an LLM judge. Faithfulness stays as the anti-hallucination gate; coverage is kept only as a diagnostic.</p>
+  <p class="read">Before trusting it, it was validated on the summaries already in hand — and it did the right thing: it preferred earlier <em>prose</em> summaries over the later <em>filename-list</em> ones, and floored vague text.</p>
+
+  <figure class="read chart" id="fig-valid">
+    <div class="fig-title">Figure 3 · does the metric prefer prose?</div>
+    <div class="fig-sub">Cosine similarity of three summary styles to each PR's real body. Higher = closer to a human PR body.</div>
+    <div class="legend" id="leg-valid"></div>
+  </figure>
+  <p class="read small">The reframe cost the old “7× improvement” its meaning — the two experiments measure different things and share no scale. So v1 was archived and v2 restarted from trial 1.</p>
+</div></section>
+
+<!-- ACT V -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">ACT V</span><h2>The diff was mostly noise</h2></div>
+  <p class="lede read">Under the new metric the seed prose prompt already scored 0.63 — the model writes decent PR bodies on its own once you stop rewarding filenames. Two of three PRs were near-perfect. One was stuck.</p>
+  <p class="read">PR #11 (a 70-file web app) sat at body-similarity 0.53 and code-dumped 665 words no matter the prompt. It <em>still overflowed</em> the 32k window — so its prompt was still being truncated. The reflex was “needs a bigger GPU.” The real answer: <b>half of that diff was a single 19,000-token design-plan markdown</b>, plus lockfiles and config. None of it belongs in a summary.</p>
+  <p class="read">Capping every file's patch to 120 lines and dropping lockfile bodies shrank the grounding below the window — and the effect on #11 was immediate and total.</p>
+
+  <figure class="wide chart" id="fig-grounding">
+    <div class="fig-title">Figure 4 · grounding size vs the context window</div>
+    <div class="fig-sub">Tokens fed to the model per PR, before and after capping. The line is the 32,768-token window.</div>
+    <div class="legend" id="leg-grounding"></div>
+  </figure>
+
+  <figure class="wide chart" id="fig-unlock">
+    <div class="fig-title">Figure 5 · the #11 unlock</div>
+    <div class="fig-sub">Body-similarity per PR, before and after the grounding cap. #11 goes from a 665-word code-dump to 124 words of prose.</div>
+    <div class="legend" id="leg-unlock"></div>
+  </figure>
+
+  <p class="read">One tool change — no new hardware, no prompt edit — took the composite from <b>0.68 to 0.91</b>, brevity to a perfect 1.0, and turned #11 into the best-scoring summary of the three. A leaner diff is simply a better thing to summarize.</p>
+
+  <figure class="wide chart" id="fig-v2">
+    <div class="fig-title">Figure 6 · experiment v2 — the body-similarity metric</div>
+    <div class="fig-sub">Five trials. Trial 5 is the grounding cap; everything before it is prompt-only tuning.</div>
+    <div class="legend" id="leg-v2"></div>
+  </figure>
+</div></section>
+
+<!-- SCOREBOARD -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">RESULTS</span><h2>The v2 log</h2></div>
+  <p class="lede read">Every trial was committed — wins and reverts alike — so the reasoning trail survives. The champion is trial 5.</p>
+  <div class="tablewrap"><table>
+    <thead><tr><th>Trial</th><th>Composite</th><th>Faith</th><th>BodySim</th><th>Brev</th><th>Change &amp; outcome</th></tr></thead>
+    <tbody>
+      <tr><td>1</td><td>0.6305</td><td>0.933</td><td>0.741</td><td>0.667</td><td><span class="note">baseline · seed prose</span></td></tr>
+      <tr><td>2</td><td>0.6811</td><td>0.970</td><td>0.764</td><td>0.667</td><td><span class="badge win">✓ champ</span> <span class="note">slash faithfulness fix</span></td></tr>
+      <tr><td>3</td><td>0.6228</td><td>0.887</td><td>0.785</td><td>0.667</td><td><span class="badge rev">✗ revert</span> <span class="note">richer prose ↑bsim but ↑slashes</span></td></tr>
+      <tr><td>4</td><td>0.6779</td><td>0.944</td><td>0.775</td><td>0.667</td><td><span class="badge rev">✗ revert</span> <span class="note">slash whack-a-mole: #10 perfect, #8 broke</span></td></tr>
+      <tr class="champ"><td>5</td><td>0.9111</td><td>0.970</td><td>0.941</td><td>1.000</td><td><span class="badge win">✓ champ</span> <span class="note">capped grounding — unblocks #11</span></td></tr>
+    </tbody>
+  </table></div>
+
+  <h3>Champion, per PR</h3>
+  <div class="tablewrap"><table>
+    <thead><tr><th>PR</th><th>Changed files</th><th>Words</th><th>Faith</th><th>BodySim</th><th>Composite</th></tr></thead>
+    <tbody>
+      <tr><td>#8 · tickets API</td><td>21</td><td>139</td><td>1.000</td><td>0.852</td><td>0.852</td></tr>
+      <tr><td>#10 · notifications</td><td>40</td><td>118</td><td>0.909</td><td>1.000</td><td>0.909</td></tr>
+      <tr><td>#11 · web app</td><td>70</td><td>124</td><td>1.000</td><td>0.972</td><td>0.972</td></tr>
+    </tbody>
+  </table></div>
+  <p class="small read" style="margin-top:14px">The only remaining drag is #10's faithfulness: the grounder flags <span class="mono">BullMQ/Redis</span> as an invented file path. It isn't one — it's ordinary prose the check mis-parses. The clean fix lives in the verifier, not the prompt.</p>
+</div></section>
+
+<!-- LEARNINGS -->
+<section><div class="wrap">
+  <div class="act-head"><span class="no">TAKEAWAYS</span><h2>What actually moved the needle</h2></div>
+  <div class="cards">
+    <div class="card"><div class="ci">01 · infrastructure</div><h3>Check the model reads the prompt</h3><p>Determinism was the smoking gun: identical output across different prompts at temperature 0 means the prompt is being truncated. No amount of prompt tuning matters until it's in the window.</p></div>
+    <div class="card"><div class="ci">02 · measurement</div><h3>Optimize the goal, not a proxy</h3><p>Filename-coverage was easy to measure and easy to game. Scoring against the real PR body — the actual artifact — realigned the loop with the job in one change.</p></div>
+    <div class="card"><div class="ci">03 · input quality</div><h3>Trim the input before the model</h3><p>The single biggest win wasn't a prompt at all. Half of one diff was a design doc; capping patches unblocked the hardest PR and improved every other one.</p></div>
+    <div class="card"><div class="ci">04 · model behaviour</div><h3>Small models are wording-fragile</h3><p>Negative examples prime the forbidden token; a fix for one PR breaks another. Short, general, positive instructions held up; clever ones didn't.</p></div>
+  </div>
+</div></section>
+
+<!-- METHOD -->
+<section style="border-bottom:none"><div class="wrap">
+  <div class="act-head"><span class="no">METHOD</span><h2>Reproduce it</h2></div>
+  <dl class="specs">
+    <dt>Summarizer</dt><dd>qwen3:8b · Ollama · temperature 0 · num_ctx 32768</dd>
+    <dt>Runtime</dt><dd>userspace Ollama (Vulkan) on RTX 3070 8 GB · q8_0 KV cache + flash-attention</dd>
+    <dt>Grounding</dt><dd>get_pr_files, patches capped at 120 lines, lockfile bodies omitted</dd>
+    <dt>Composite</dt><dd>faithfulness × body_similarity × (0.7 + 0.3·brevity)</dd>
+    <dt>body_similarity</dt><dd>rescaled cosine( embed(summary), embed(real PR body) ) · nomic-embed-text</dd>
+    <dt>faithfulness</dt><dd>deterministic grounder — every path / endpoint / identifier must appear in the diff</dd>
+    <dt>Eval set</dt><dd>VictorFouquet/supportops PRs #8, #10, #11 (frozen, with held-out bodies)</dd>
+  </dl>
+  <p class="pull read">Fifteen trials. The two that mattered most changed no prompt words at all — one raised a context window, one threw away the noise.</p>
+</div></section>
+
+</main>
+
+<footer><div class="wrap">
+  <b>pr_summarizer</b> · a grounded PR summarizer + prompt-optimization harness on local Qwen.<br>
+  Champion composite <b>0.911</b> · every trial committed to the research log. Generated as a field-notes write-up.
+</div></footer>
+
+<div class="tip" id="tip"></div>
+
+<script>
+/* ---------- theme toggle ---------- */
+(function(){
+  var root=document.documentElement, tg=document.getElementById('tg');
+  var ti=document.getElementById('tgi'), tt=document.getElementById('tgt');
+  function sysDark(){return matchMedia('(prefers-color-scheme:dark)').matches;}
+  function cur(){var e=root.getAttribute('data-theme');return e|| (sysDark()?'dark':'light');}
+  function paint(){var d=cur()==='dark';ti.textContent=d?'○':'●';tt.textContent=d?'Light':'Dark';}
+  try{var s=localStorage.getItem('pr-theme');if(s)root.setAttribute('data-theme',s);}catch(e){}
+  paint();
+  tg.addEventListener('click',function(){var n=cur()==='dark'?'light':'dark';root.setAttribute('data-theme',n);try{localStorage.setItem('pr-theme',n);}catch(e){}paint();});
+})();
+
+/* ---------- tiny chart toolkit (SVG, theme-aware via CSS vars) ---------- */
+const NS='http://www.w3.org/2000/svg';
+const C={1:'var(--c1)',2:'var(--c2)',3:'var(--c3)',good:'var(--good)',bad:'var(--bad)',accent:'var(--accent)',muted:'var(--muted)',faint:'var(--faint)'};
+const tip=document.getElementById('tip');
+function el(t,a){var e=document.createElementNS(NS,t);for(var k in a)e.setAttribute(k,a[k]);return e;}
+function showTip(ev,html){tip.innerHTML=html;tip.style.opacity=1;moveTip(ev);}
+function moveTip(ev){var x=ev.clientX+14,y=ev.clientY+14;if(x+180>innerWidth)x=ev.clientX-180;tip.style.left=x+'px';tip.style.top=y+'px';}
+function hideTip(){tip.style.opacity=0;}
+function legend(id,items){var L=document.getElementById(id);if(!L)return;L.innerHTML=items.map(function(it){
+  return '<span class="k"><span class="sw" style="background:'+it.c+(it.dash?';height:0;border-top:2px dashed '+it.c:'')+'"></span>'+it.n+'</span>';}).join('');}
+
+function mount(id){var f=document.getElementById(id);var d=el('svg',{});f.appendChild(d);return d;}
+
+/* line chart: series=[{name,color,vals}], xl=labels */
+function lineChart(id,{series,xl,ymax=1,yticks=5,bands=[],champs=[]}){
+  var svg=mount(id),W=760,H=300,m={t:14,r:18,b:34,l:34};
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('role','img');
+  var iw=W-m.l-m.r,ih=H-m.t-m.b, n=xl.length;
+  var X=i=>m.l+(n===1?iw/2:iw*i/(n-1)), Y=v=>m.t+ih*(1-v/ymax);
+  bands.forEach(b=>{var x0=X(b.from),x1=X(b.to);svg.appendChild(el('rect',{x:x0,y:m.t,width:(x1-x0),height:ih,fill:'var(--bad)','fill-opacity':.06}));
+    var t=el('text',{x:(x0+x1)/2,y:m.t+13,'text-anchor':'middle','font-size':10,style:'fill:var(--bad)'});t.textContent=b.label;svg.appendChild(t);});
+  var g=el('g',{class:'grid'});for(var k=0;k<=yticks;k++){var v=ymax*k/yticks,y=Y(v);g.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:y,y2:y}));
+    var tx=el('text',{x:m.l-7,y:y+3,'text-anchor':'end','font-size':10});tx.textContent=v.toFixed(1);g.appendChild(tx);}svg.appendChild(g);
+  xl.forEach((lab,i)=>{var tx=el('text',{x:X(i),y:H-12,'text-anchor':'middle','font-size':10});tx.textContent=lab;svg.appendChild(tx);});
+  champs.forEach(ci=>{svg.appendChild(el('line',{x1:X(ci),x2:X(ci),y1:m.t,y2:m.t+ih,stroke:'var(--good)','stroke-dasharray':'3 4','stroke-opacity':.5}));});
+  series.forEach(s=>{
+    var d=s.vals.map((v,i)=>(i?'L':'M')+X(i)+' '+Y(v)).join(' ');
+    svg.appendChild(el('path',{d:d,fill:'none',stroke:s.color,'stroke-width':s.width||2.4,'stroke-linejoin':'round','stroke-opacity':s.op||1}));
+    s.vals.forEach((v,i)=>{
+      var c=el('circle',{cx:X(i),cy:Y(v),r:s.main?4:3,fill:'var(--surface)',stroke:s.color,'stroke-width':2});
+      c.style.cursor='pointer';
+      c.addEventListener('mouseenter',e=>showTip(e,'<b>'+s.name+'</b> · '+xl[i]+'<br>'+v.toFixed(3)));
+      c.addEventListener('mousemove',moveTip);c.addEventListener('mouseleave',hideTip);
+      svg.appendChild(c);
+    });
+  });
+}
+
+/* grouped bars: groups=[label], series=[{name,color,vals[]}] */
+function groupedBars(id,{groups,series,ymax=1,yticks=5,unit='',fmt=(v=>v.toFixed(2)),refline=null,reflabel=''}){
+  var svg=mount(id),W=760,H=320,m={t:16,r:16,b:44,l:44};
+  svg.setAttribute('viewBox','0 0 '+W+' '+H);svg.setAttribute('role','img');
+  var iw=W-m.l-m.r,ih=H-m.t-m.b, ng=groups.length, ns=series.length;
+  var gw=iw/ng, bw=Math.min(46,(gw*0.7)/ns), gap=2;
+  var Y=v=>m.t+ih*(1-v/ymax);
+  var g=el('g',{class:'grid'});for(var k=0;k<=yticks;k++){var v=ymax*k/yticks,y=Y(v);g.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:y,y2:y}));
+    var tx=el('text',{x:m.l-8,y:y+3,'text-anchor':'end','font-size':10});tx.textContent=(unit==='k'?(v/1000):v).toFixed(unit==='k'?0:1)+(unit==='k'?'k':'');g.appendChild(tx);}svg.appendChild(g);
+  groups.forEach((grp,gi)=>{
+    var cx=m.l+gw*gi+gw/2;
+    var totalw=ns*bw+(ns-1)*gap, x0=cx-totalw/2;
+    series.forEach((s,si)=>{
+      var v=s.vals[gi],x=x0+si*(bw+gap),y=Y(v),h=(m.t+ih)-y;
+      var r=el('rect',{x:x,y:y,width:bw,height:Math.max(h,1),rx:4,fill:s.color});
+      r.style.cursor='pointer';
+      r.addEventListener('mouseenter',e=>showTip(e,'<b>'+grp+'</b> · '+s.name+'<br>'+fmt(v)));
+      r.addEventListener('mousemove',moveTip);r.addEventListener('mouseleave',hideTip);
+      svg.appendChild(r);
+    });
+    var tx=el('text',{x:cx,y:H-24,'text-anchor':'middle','font-size':11,style:'fill:var(--ink)'});tx.textContent=grp;svg.appendChild(tx);
+  });
+  if(refline!=null){var y=Y(refline);svg.appendChild(el('line',{x1:m.l,x2:W-m.r,y1:y,y2:y,stroke:'var(--accent)','stroke-width':1.6,'stroke-dasharray':'5 4'}));
+    var t=el('text',{x:W-m.r,y:y-6,'text-anchor':'end','font-size':10,style:'fill:var(--accent-ink)'});t.textContent=reflabel;svg.appendChild(t);}
+}
+
+/* ---------- data ---------- */
+var V1={comp:[.0791,.0622,.0622,.0578,.2939,.3748,.1814,.4037,.1443,.1602],
+        faith:[.575,.503,.503,.963,.958,1,.942,.929,.869,1],
+        cov:[.178,.170,.170,.062,.355,.416,.237,.498,.202,.202]};
+var V2={comp:[.6305,.6811,.6228,.6779,.9111],
+        faith:[.933,.970,.887,.944,.970],
+        bsim:[.741,.764,.785,.775,.941]};
+
+lineChart('fig-v1',{
+  xl:['1','2','3','4','5','6','7','8','9','10'],ymax:1,
+  bands:[{from:0,to:2,label:'inert · prompt truncated'}],champs:[7],
+  series:[
+    {name:'coverage',color:C[3],vals:V1.cov,width:2},
+    {name:'faithfulness',color:C[2],vals:V1.faith,width:2},
+    {name:'composite',color:C[1],vals:V1.comp,width:3,main:true}
+  ]});
+legend('leg-v1',[{n:'composite',c:C[1]},{n:'faithfulness',c:C[2]},{n:'coverage',c:C[3]},{n:'champion (t8 · 0.40)',c:C.good,dash:true}]);
+
+lineChart('fig-v2',{
+  xl:['1','2','3','4','5'],ymax:1,champs:[4],
+  series:[
+    {name:'body-similarity',color:C[3],vals:V2.bsim,width:2},
+    {name:'faithfulness',color:C[2],vals:V2.faith,width:2},
+    {name:'composite',color:C[1],vals:V2.comp,width:3,main:true}
+  ]});
+legend('leg-v2',[{n:'composite',c:C[1]},{n:'faithfulness',c:C[2]},{n:'body-similarity',c:C[3]},{n:'champion (t5 · 0.91)',c:C.good,dash:true}]);
+
+/* validation: cosine sim of 3 styles per PR */
+groupedBars('fig-valid',{
+  groups:['PR #8','PR #10','PR #11'],ymax:1,
+  fmt:v=>v.toFixed(3),
+  series:[
+    {name:'prose summary',color:C[1],vals:[.859,.911,.743]},
+    {name:'filename list',color:C[2],vals:[.815,.904,.758]},
+    {name:'vague filler',color:C[3],vals:[.620,.653,.645]}
+  ]});
+legend('leg-valid',[{n:'prose summary',c:C[1]},{n:'filename list',c:C[2]},{n:'vague filler',c:C[3]}]);
+
+/* grounding tokens before/after cap */
+groupedBars('fig-grounding',{
+  groups:['PR #8','PR #10','PR #11'],ymax:40000,unit:'k',yticks:4,
+  fmt:v=>Math.round(v/100)/10+'k tokens',
+  refline:32768,reflabel:'context window · 32,768',
+  series:[
+    {name:'raw diff',color:C[2],vals:[24974,24083,38166]},
+    {name:'after cap',color:C[1],vals:[10641,13333,21383]}
+  ]});
+legend('leg-grounding',[{n:'raw diff',c:C[2]},{n:'after cap',c:C[1]},{n:'32,768 window',c:C.accent,dash:true}]);
+
+/* the #11 unlock: body-sim per PR before/after cap */
+groupedBars('fig-unlock',{
+  groups:['PR #8','PR #10','PR #11'],ymax:1,
+  fmt:v=>'body-sim '+v.toFixed(3),
+  series:[
+    {name:'before cap',color:C[2],vals:[.765,1.0,.527]},
+    {name:'after cap',color:C[1],vals:[.852,1.0,.972]}
+  ]});
+legend('leg-unlock',[{n:'before cap',c:C[2]},{n:'after cap',c:C[1]}]);
+</script>
