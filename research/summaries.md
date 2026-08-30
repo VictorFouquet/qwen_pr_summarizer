@@ -4,13 +4,14 @@ Human-readable companion to `research/log.jsonl`. For each trial: the hypothesis
 
 ## Scoreboard
 
-Best so far: **0.2518** (trial 2).
+Best so far: **0.5273** (trial 4).
 
 | Trial | Composite | Faith | BodySim | Brev | (Cov) | Note |
 |------:|----------:|------:|--------:|-----:|------:|------|
 | 1 | 0.1344 | 0.167 | 0.702 | 1.000 | 0.000 | BASELINE (three-tool + earned faithfulness, config 3000814c954c): seed prompt. Faithfulness now rewards grounded specifics (needs reading), empty->0. Expect the lazy baseline (opens ~0 files) to score low -> the gradient to reward reading. |
-| 2 ⭐ | 0.2518 | 0.341 | 0.701 | 1.000 | 0.019 | campaign T2: make reading the default. Baseline agent opens ~0 files -> faith ~0. Instruct it to open the diffs of the core source files (skip noise) and never summarize from names alone. Expect files-opened up, faith+bsim up. |
+| 2 | 0.2518 | 0.341 | 0.701 | 1.000 | 0.019 | campaign T2: make reading the default. Baseline agent opens ~0 files -> faith ~0. Instruct it to open the diffs of the core source files (skip noise) and never summarize from names alone. Expect files-opened up, faith+bsim up. |
 | 3 | 0.1535 | 0.200 | 0.765 | 1.000 | 0.005 | campaign T3: mandatory numbered procedure forcing step 3 (call get_file_diff on EACH main source file before summarizing). Baseline+T2 agent opened ~0 diffs; force actual reading. Watch files-opened in the trace. |
+| 4 ⭐ | 0.5273 | 0.726 | 0.732 | 1.000 | 0.043 | campaign T4: reading procedure (T3) + name the concrete elements seen in the diffs. T3 read but stayed vague (faith 0). Now instruct naming real functions/classes/fields/routes -> grounded specifics -> faith up while keeping T3's bsim gain. |
 
 
 ---
@@ -170,6 +171,77 @@ Best so far: **0.2518** (trial 2).
 > 
 > **Context:**  
 > The PR establishes the frontend foundation for a support operations tool, focusing on API-driven interactions and Next.js app router integration. Session handling uses HTTP-only cookies, and ticket data is managed via defined types and endpoints.
+
+<details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
+
+- step 0 · `list_pr_files` → 6.0k chars
+- step 1 · `get_file_diff` `apps/web/src/lib/api.ts` → 2.9k chars
+
+</details>
+
+
+---
+
+## Trial 4 — composite **0.5273** · faith 0.726 · bodysim 0.732 · brev 1.000 · (cov 0.043)
+
+- **Prompt id:** `e38cd153b3d9` · **config_fp:** `1b472c42d619`
+- **Hypothesis / note:** campaign T4: reading procedure (T3) + name the concrete elements seen in the diffs. T3 read but stayed vague (faith 0). Now instruct naming real functions/classes/fields/routes -> grounded specifics -> faith up while keeping T3's bsim gain.
+
+### VictorFouquet/supportops#8 — composite **0.4717** · faith 0.600 · bodysim 0.786 · brev 1.000 · (cov 0.000) (0/21 files, 122 words)
+
+> **Purpose:**  
+> Implement ticket management and comment features in the supportops API, including status transitions, assignment, and comment handling.
+> 
+> **Changes:**  
+> - Added a `TicketsController` with endpoints for listing tickets, creating/updating tickets, assigning ownership, changing statuses, and managing comments.  
+> - Introduced a `TicketsService` with logic for ticket operations, including validation of legal status transitions (e.g., OPEN → RESOLVED) and database interactions via Prisma.  
+> - Created DTOs (data transfer objects) for ticket creation, updates, assignments, and comments to structure request/response data.  
+> - Added comment-related endpoints in the controller and a `TicketCommentsService` to handle comment creation and listing.  
+> 
+> **Context:**  
+> The changes align with documentation updates in ADRs (Architecture Decision Records) and a phase plan for ticketing features, ensuring consistent status transitions and authorization checks for comments.
+
+<details><summary>Agent budget · 3 tool calls over 3 steps · 2/21 files opened</summary>
+
+- step 0 · `list_pr_files` → 1.9k chars
+- step 1 · `get_file_diff` `apps/api/src/tickets/tickets.controller.ts` → 3.0k chars
+- step 2 · `get_file_diff` `apps/api/src/tickets/tickets.service.ts` → 5.0k chars
+
+</details>
+
+### VictorFouquet/supportops#10 — composite **0.6446** · faith 0.778 · bodysim 0.829 · brev 1.000 · (cov 0.000) (0/40 files, 85 words)
+
+> **Purpose:**  
+> Implement a notification system to alert users when tickets are assigned to them.  
+> 
+> **Changes:**  
+> - Integrated `NotificationService` into `TicketsService` to send notifications via `ticketAssigned` when tickets are assigned or reassigned.  
+> - Added logic in `list` and `assign` methods to trigger notifications to recipients when ticket assignees change.  
+> - Introduced new packages (`notifications`, `queue`) and a worker (`notification-worker`) to handle asynchronous notification delivery.  
+> 
+> **Context:**  
+> The PR adds infrastructure for notifications, including service implementations, transport mechanisms, and test files, alongside documentation updates for async notification workflows.
+
+<details><summary>Agent budget · 2 tool calls over 2 steps · 1/40 files opened</summary>
+
+- step 0 · `list_pr_files` → 3.5k chars
+- step 1 · `get_file_diff` `apps/api/src/tickets/tickets.service.ts` → 2.1k chars
+
+</details>
+
+### VictorFouquet/supportops#11 — composite **0.4657** · faith 0.800 · bodysim 0.582 · brev 1.000 · (cov 0.129) (9/70 files, 126 words)
+
+> **Purpose:**  
+> Set up a new web application for a support operations system, including API client libraries and frontend utilities.
+> 
+> **Changes:**  
+> - Added a comprehensive API client library (`api.ts`) with functions for authentication (`login`, `getMe`), ticket management (`listTickets`, `getTicket`, `addComment`, `setStatus`, `assignTicket`), user/customer data retrieval (`listUsers`, `listCustomers`), and HTTP request handling.  
+> - Introduced Next.js project structure files (e.g., `next.config.ts`, `tsconfig.json`) and ESLint/PostCSS configurations.  
+> - Created utility files for session management (`session.ts`), HTTP requests (`http.ts`), and type definitions (`api-types.ts`).  
+> - Added test setup files (e.g., `vitest.config.ts`) and component files for UI elements (e.g., `app-header.tsx`, `ticket-filters.tsx`).  
+> 
+> **Context:**  
+> The PR establishes a frontend foundation for a support tool, enabling features like ticket tracking, user authentication, and data interaction with a backend API. Documentation updates clarify architecture decisions and project scope.
 
 <details><summary>Agent budget · 2 tool calls over 2 steps · 1/70 files opened</summary>
 
