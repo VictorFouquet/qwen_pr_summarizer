@@ -14,6 +14,7 @@ from pr_summarizer.verifier import Claim, ClaimKind
 def _fake_result(composite, unsupported=()):
     metrics = Metrics(
         faithfulness=composite,
+        body_similarity=1.0,
         coverage=1.0,
         brevity=1.0,
         composite=composite,
@@ -35,7 +36,7 @@ def test_evaluate_aggregates_and_surfaces_unsupported():
     ]
     scores = iter([_fake_result(0.6, unsupported=["pages/x.tsx"]), _fake_result(0.8)])
 
-    def fake_run(repo, number, prompt=None):
+    def fake_run(repo, number, prompt=None, reference_body=None):
         return next(scores)
 
     out = evaluate_prompt("some prompt", eval_set, run_fn=fake_run)

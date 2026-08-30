@@ -12,6 +12,7 @@ from __future__ import annotations
 import re
 from dataclasses import asdict, dataclass
 
+from .embedding import body_similarity as _body_similarity
 from .verifier import Verification, verify
 
 # Frozen scoring parameters. Changing any of these changes what "score" means.
@@ -31,6 +32,7 @@ _PLUSFILE_RE = re.compile(r"^\+\+\+ b/(\S+)$", re.MULTILINE)
 @dataclass
 class Metrics:
     faithfulness: float
+    body_similarity: float
     coverage: float
     brevity: float
     composite: float
@@ -84,17 +86,27 @@ def brevity_score(summary: str) -> tuple[float, int]:
     return (1.0 - (words - BREVITY_TARGET_WORDS) / span, words)
 
 
-def compute_metrics(summary: str, grounding: str, verification: Verification | None = None) -> Metrics:
+def compute_metrics(
+    summary: str,
+    grounding: str,
+    verification: Verification | None = None,
+    reference_body: str | None = None,
+) -> Metrics:
     if verification is None:
         verification = verify(summary, grounding)
     files = changed_files_from_grounding(grounding)
     cov, referenced = coverage_score(summary, files)
     brev, words = brevity_score(summary)
     faith = verification.score
-    # Faithfulness and coverage are multiplicative gates; brevity only modulates.
-    composite = faith * cov * (BREVITY_FLOOR + BREVITY_RANGE * brev)
+    # The summarizer's job is a high-level PR body, so the semantic signal is how close
+    # the summary is to the human PR body (reference), not how many filenames it echoes.
+    # Faithfulness and body_similarity are the multiplicative gates; brevity only
+    # modulates. Coverage is still computed, but as a diagnostic — it no longer scores.
+    bsim = _body_similarity(summary, reference_body or "")
+    composite = faith * bsim * (BREVITY_FLOOR + BREVITY_RANGE * brev)
     return Metrics(
         faithfulness=round(faith, 4),
+        body_similarity=round(bsim, 4),
         coverage=round(cov, 4),
         brevity=round(brev, 4),
         composite=round(composite, 4),

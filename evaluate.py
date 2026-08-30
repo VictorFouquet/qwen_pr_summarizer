@@ -46,7 +46,7 @@ def _print_status(log: ResearchLog) -> None:
         m = r["metrics"]
         print(
             f"  #{r['trial']:>3}  comp={m['composite']:.3f}  faith={m['faithfulness']:.3f}  "
-            f"cov={m['coverage']:.3f}  brev={m['brevity']:.3f}   {r.get('note', '')}"
+            f"bsim={m.get('body_similarity', 0):.3f}  brev={m['brevity']:.3f}   {r.get('note', '')}"
         )
 
 
@@ -86,13 +86,14 @@ def main() -> None:
     agg = result["metrics"]
     print(
         f"trial {trial.trial}  composite={agg['composite']}  faithfulness={agg['faithfulness']}  "
-        f"coverage={agg['coverage']}  brevity={agg['brevity']}  (n={agg['n']}, config {fingerprint})"
+        f"body_similarity={agg['body_similarity']}  brevity={agg['brevity']}  "
+        f"(coverage={agg['coverage']}, n={agg['n']}, config {fingerprint})"
     )
     for p in result["per_pr"]:
         print(
             f"\nPR {p['repo']}#{p['pr_number']}: "
-            f"composite={p['composite']} faith={p['faithfulness']} cov={p['coverage']} "
-            f"({p['files_referenced']}/{p['changed_files']} files, {p['word_count']} words)"
+            f"composite={p['composite']} faith={p['faithfulness']} bsim={p['body_similarity']} "
+            f"(cov={p['coverage']}, {p['files_referenced']}/{p['changed_files']} files, {p['word_count']} words)"
         )
         if p["unsupported"]:
             print("  unsupported claims (fix these in the prompt):")

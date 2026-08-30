@@ -10,7 +10,7 @@ from __future__ import annotations
 from statistics import mean
 from typing import Callable
 
-_AGG_KEYS = ["faithfulness", "coverage", "brevity", "composite"]
+_AGG_KEYS = ["faithfulness", "body_similarity", "coverage", "brevity", "composite"]
 
 
 def evaluate_prompt(prompt: str, eval_set: list[dict], run_fn: Callable) -> dict:
@@ -21,7 +21,7 @@ def evaluate_prompt(prompt: str, eval_set: list[dict], run_fn: Callable) -> dict
     per_pr: list[dict] = []
     for item in eval_set:
         repo, number = item["repo"], item["pr_number"]
-        result = run_fn(repo, number, prompt=prompt)
+        result = run_fn(repo, number, prompt=prompt, reference_body=item.get("reference_body", ""))
         row = result.metrics.as_dict()
         row["repo"] = repo
         row["pr_number"] = number

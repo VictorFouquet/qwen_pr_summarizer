@@ -52,23 +52,32 @@ def test_brevity_full_then_decays():
     assert 0.0 < mid < 1.0
 
 
-def test_composite_gates_on_faithfulness():
+def test_composite_gates_on_faithfulness_and_body_similarity(monkeypatch):
+    import pr_summarizer.metrics as metrics_mod
+
+    # Stub the embedding-based similarity so the test stays offline and deterministic:
+    # an empty summary scores 0, anything else scores 0.9.
+    monkeypatch.setattr(
+        metrics_mod, "_body_similarity", lambda summary, ref: 0.0 if not summary.strip() else 0.9
+    )
     files = "apps/web/src/lib/mutate.ts"
     grounding = f"FILE: {files}\nPATCH:\n+export function mutate() {{}}\n"
+    ref = "Adds a mutate helper under the web lib."
 
-    # Faithful + covering + short -> high composite.
+    # Faithful + close-to-body + short -> high composite (1.0 * 0.9 * 1.0 = 0.9).
     good = "Adds `apps/web/src/lib/mutate.ts` exporting `mutate`."
-    good_m = compute_metrics(good, grounding)
+    good_m = compute_metrics(good, grounding, reference_body=ref)
     assert good_m.faithfulness == 1.0
-    assert good_m.coverage == 1.0
-    assert good_m.composite > 0.9
+    assert good_m.body_similarity == 0.9
+    assert good_m.composite > 0.85
 
     # Hallucinated path -> faithfulness collapses -> composite collapses.
     bad = "Adds `pages/index.tsx` and `/api/auth/login`."
-    bad_m = compute_metrics(bad, grounding)
+    bad_m = compute_metrics(bad, grounding, reference_body=ref)
     assert bad_m.faithfulness < 0.5
     assert bad_m.composite < good_m.composite
 
-    # Empty summary -> coverage 0 -> composite 0 even though nothing is "unfaithful".
-    empty_m = compute_metrics("", grounding)
+    # Empty summary -> body_similarity 0 -> composite 0 even though nothing is "unfaithful".
+    empty_m = compute_metrics("", grounding, reference_body=ref)
+    assert empty_m.body_similarity == 0.0
     assert empty_m.composite == 0.0

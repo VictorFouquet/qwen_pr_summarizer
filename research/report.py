@@ -28,7 +28,8 @@ def _read_trials() -> list[dict]:
 def _fmt_metrics(m: dict) -> str:
     return (
         f"composite **{m['composite']:.4f}** · "
-        f"faith {m['faithfulness']:.3f} · cov {m['coverage']:.3f} · brev {m['brevity']:.3f}"
+        f"faith {m['faithfulness']:.3f} · bodysim {m.get('body_similarity', 0):.3f} · "
+        f"brev {m['brevity']:.3f} · (cov {m['coverage']:.3f})"
     )
 
 
@@ -45,15 +46,15 @@ def render(trials: list[dict]) -> str:
         best = max(trials, key=lambda t: t["metrics"]["composite"])
         lines.append("## Scoreboard\n")
         lines.append(f"Best so far: **{best['metrics']['composite']:.4f}** (trial {best['trial']}).\n")
-        lines.append("| Trial | Composite | Faith | Cov | Brev | Note |")
-        lines.append("|------:|----------:|------:|----:|-----:|------|")
+        lines.append("| Trial | Composite | Faith | BodySim | Brev | (Cov) | Note |")
+        lines.append("|------:|----------:|------:|--------:|-----:|------:|------|")
         for t in trials:
             m = t["metrics"]
             star = " ⭐" if t["trial"] == best["trial"] else ""
             note = (t.get("note") or "").replace("|", "\\|").replace("\n", " ")
             lines.append(
                 f"| {t['trial']}{star} | {m['composite']:.4f} | {m['faithfulness']:.3f} | "
-                f"{m['coverage']:.3f} | {m['brevity']:.3f} | {note} |"
+                f"{m.get('body_similarity', 0):.3f} | {m['brevity']:.3f} | {m['coverage']:.3f} | {note} |"
             )
         lines.append("")
 

@@ -27,6 +27,7 @@ from pr_summarizer.metrics import (
     Metrics,
     compute_metrics,
 )
+from pr_summarizer.embedding import EMBED_MODEL
 from pr_summarizer.researchlog import config_fingerprint
 from pr_summarizer.verifier import Verification, verify
 
@@ -68,7 +69,9 @@ def frozen_config() -> dict:
         "num_ctx": NUM_CTX,
         "tools": ["get_pr_files", "read_file"],
         "metric": {
-            "formula": "faithfulness * coverage * (0.7 + 0.3*brevity)",
+            "formula": "faithfulness * body_similarity * (0.7 + 0.3*brevity)",
+            "body_similarity": "cosine(summary, reference_pr_body) rescaled [0.60,0.90]->[0,1]",
+            "embed_model": EMBED_MODEL,
             "brevity_target": BREVITY_TARGET_WORDS,
             "brevity_cap": BREVITY_HARD_CAP_WORDS,
             "brevity_floor": BREVITY_FLOOR,
@@ -161,6 +164,7 @@ def summarize_pr(
     pr_number: int,
     *,
     prompt: str | None = None,
+    reference_body: str | None = None,
     model: str = MODEL,
     temperature: float = TEMPERATURE,
     max_steps: int = MAX_STEPS,
@@ -196,7 +200,7 @@ def summarize_pr(
     summary = _clean(response.content)
     grounding = "\n\n".join(captured)
     verification = verify(summary, grounding)
-    metrics = compute_metrics(summary, grounding, verification)
+    metrics = compute_metrics(summary, grounding, verification, reference_body=reference_body)
     return SummaryResult(repo, pr_number, summary, grounding, verification, metrics, steps)
 
 
