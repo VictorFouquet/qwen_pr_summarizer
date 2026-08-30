@@ -59,6 +59,24 @@ MAX_STEPS = 8
 # model's maximum so the prompt + a full PR's grounding coexist. Requires adequate memory
 # for the KV cache (~5-6GB at this size, on top of the ~6GB model).
 NUM_CTX = int(os.environ.get("PR_SUMMARIZER_NUM_CTX", "40960"))
+# A PR summary is high-level context, not a line-by-line review, and one giant file (a
+# generated lockfile, a big design doc, vendored code) can be half the diff and crowd the
+# real changes out of the context window. Cap each file's patch so no single file
+# dominates the grounding, and omit lockfile bodies entirely — they carry no summary value.
+PATCH_MAX_LINES = int(os.environ.get("PR_SUMMARIZER_PATCH_MAX_LINES", "120"))
+LOCKFILES = {"pnpm-lock.yaml", "package-lock.json", "yarn.lock", "poetry.lock", "Cargo.lock"}
+
+
+def _render_patch(filename: str, patch: str | None) -> str:
+    """The patch text the model sees for one file — lockfiles omitted, long patches capped."""
+    if filename.rsplit("/", 1)[-1] in LOCKFILES:
+        return "(lock file — patch omitted)"
+    text = patch or "(no patch available)"
+    lines = text.split("\n")
+    if len(lines) > PATCH_MAX_LINES:
+        kept = "\n".join(lines[:PATCH_MAX_LINES])
+        return f"{kept}\n... (patch truncated, {len(lines) - PATCH_MAX_LINES} more lines)"
+    return text
 
 
 def frozen_config() -> dict:
@@ -67,6 +85,7 @@ def frozen_config() -> dict:
         "temperature": TEMPERATURE,
         "max_steps": MAX_STEPS,
         "num_ctx": NUM_CTX,
+        "patch_max_lines": PATCH_MAX_LINES,
         "tools": ["get_pr_files", "read_file"],
         "metric": {
             "formula": "faithfulness * body_similarity * (0.7 + 0.3*brevity)",
@@ -119,7 +138,7 @@ def _build_tools(gh: Github, captured: list[str]):
                 f"STATUS: {f.status}\n"
                 f"ADDITIONS: {f.additions}\n"
                 f"DELETIONS: {f.deletions}\n"
-                f"PATCH:\n{f.patch or '(no patch available)'}"
+                f"PATCH:\n{_render_patch(f.filename, f.patch)}"
             )
         out = "\n\n".join(blocks)
         captured.append(out)
