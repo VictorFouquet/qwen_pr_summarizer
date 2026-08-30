@@ -118,7 +118,11 @@ def _looks_like_path(tok: str) -> bool:
     # Avoid grabbing URLs like https://... (host claims aren't diff-checkable here).
     if tok.startswith(("http://", "https://")):
         return False
-    return True
+    # A real path has a file extension in its last segment, or several segments. A bare
+    # two-word pair joined by a slash ("BullMQ/Redis", "console/email", "queue/worker") is
+    # ordinary prose, not a file path — treating it as a path claim is a false positive.
+    last = tok.rsplit("/", 1)[-1]
+    return "." in last or tok.count("/") >= 2
 
 
 def extract_claims(summary: str) -> list[Claim]:

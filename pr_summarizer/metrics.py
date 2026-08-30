@@ -13,7 +13,26 @@ import re
 from dataclasses import asdict, dataclass
 
 from .embedding import body_similarity as _body_similarity
-from .verifier import Verification, verify
+from .verifier import ClaimKind, Verification, verify
+
+# Faithfulness must be EARNED, not granted for silence. The old score was pure precision
+# (supported / total), so a summary that reads nothing and commits to nothing scored 1.0 —
+# the "trader who never trades" degeneracy, which pushes the optimizer toward vagueness.
+# Instead we reward grounded *specifics* and penalize hallucinations:
+#     faithfulness = grounded_substance / (grounded_substance + hallucinations + ALPHA)
+# An empty/vague summary → ~0; a summary that surfaces real, grounded identifiers and
+# endpoints → high; any invented claim drags it down. Identifiers and endpoints (which
+# only appear in the DIFFS, so they require actually reading files) are weighted fully;
+# paths are cheap (they show up in the file list) so they earn little — you can't pad
+# faithfulness by echoing filenames you never opened.
+FAITH_ALPHA = 2.0
+_CLAIM_WEIGHT = {ClaimKind.IDENTIFIER: 1.0, ClaimKind.ENDPOINT: 1.0, ClaimKind.PATH: 0.3}
+
+
+def faithfulness_score(verification: Verification) -> float:
+    grounded = sum(_CLAIM_WEIGHT.get(c.kind, 1.0) for c in verification.supported)
+    hallucinations = len(verification.unsupported)
+    return grounded / (grounded + hallucinations + FAITH_ALPHA)
 
 # Frozen scoring parameters. Changing any of these changes what "score" means.
 BREVITY_TARGET_WORDS = 200
@@ -97,7 +116,7 @@ def compute_metrics(
     files = changed_files_from_grounding(grounding)
     cov, referenced = coverage_score(summary, files)
     brev, words = brevity_score(summary)
-    faith = verification.score
+    faith = faithfulness_score(verification)
     # The summarizer's job is a high-level PR body, so the semantic signal is how close
     # the summary is to the human PR body (reference), not how many filenames it echoes.
     # Faithfulness and body_similarity are the multiplicative gates; brevity only

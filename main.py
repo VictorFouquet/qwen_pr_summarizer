@@ -70,6 +70,7 @@ def frozen_config() -> dict:
         "tools": ["list_pr_files", "get_file_diff", "read_file"],
         "metric": {
             "formula": "faithfulness * body_similarity * (0.7 + 0.3*brevity)",
+            "faithfulness": "grounded_specifics/(grounded_specifics+hallucinations+2); id&endpoint weight 1, path 0.3 (empty->0)",
             "body_similarity": "cosine(summary, reference_pr_body) rescaled [0.60,0.90]->[0,1]",
             "embed_model": EMBED_MODEL,
             "brevity_target": BREVITY_TARGET_WORDS,

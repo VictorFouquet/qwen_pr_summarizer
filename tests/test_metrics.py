@@ -64,20 +64,23 @@ def test_composite_gates_on_faithfulness_and_body_similarity(monkeypatch):
     grounding = f"FILE: {files}\nPATCH:\n+export function mutate() {{}}\n"
     ref = "Adds a mutate helper under the web lib."
 
-    # Faithful + close-to-body + short -> high composite (1.0 * 0.9 * 1.0 = 0.9).
+    # Faithfulness is EARNED by grounded specifics, not granted for silence. A grounded
+    # identifier (`mutate`, weight 1) + a grounded path (weight 0.3) -> 1.3/(1.3+0+2) ≈ 0.39.
     good = "Adds `apps/web/src/lib/mutate.ts` exporting `mutate`."
     good_m = compute_metrics(good, grounding, reference_body=ref)
-    assert good_m.faithfulness == 1.0
+    assert 0.3 < good_m.faithfulness < 0.5
     assert good_m.body_similarity == 0.9
-    assert good_m.composite > 0.85
+    assert good_m.composite > 0.3
 
-    # Hallucinated path -> faithfulness collapses -> composite collapses.
+    # Hallucinated claims -> zero grounded substance, two hallucinations -> faithfulness 0.
     bad = "Adds `pages/index.tsx` and `/api/auth/login`."
     bad_m = compute_metrics(bad, grounding, reference_body=ref)
-    assert bad_m.faithfulness < 0.5
+    assert bad_m.faithfulness < good_m.faithfulness
     assert bad_m.composite < good_m.composite
 
-    # Empty summary -> body_similarity 0 -> composite 0 even though nothing is "unfaithful".
+    # Empty summary -> no grounded substance -> faithfulness 0 (NOT a free 1.0) AND
+    # body_similarity 0 -> composite 0. This is the fix for the "reward for silence" bug.
     empty_m = compute_metrics("", grounding, reference_body=ref)
+    assert empty_m.faithfulness == 0.0
     assert empty_m.body_similarity == 0.0
     assert empty_m.composite == 0.0
